@@ -21,7 +21,7 @@ def gather_scores(iteration, name):
 
     ### find the csv file containing the docking results correspponding to each process 
     dirname = os.path.join(script_dir, f'../docking/docking_results/{name}/')
-    csv_files_list=[join(dirname, f) for f in listdir(dirname) if isfile(join(dirname, f)) and f.endswith(".csv")]
+    csv_files_list=[join(dirname, f) for f in listdir(dirname) if isfile(join(dirname, f)) and f.endswith(".csv") and os.path.getsize(join(dirname,f))>0]
     
     ### concatenated csv file ,remove unsuccessful docking, and sort by values 
     dfs = [pd.read_csv(csv_file) for csv_file in csv_files_list]
