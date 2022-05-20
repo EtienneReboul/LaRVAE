@@ -1,0 +1,10 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) CCconfig         4) imkl/2020.1.217    7) libfabric/1.10.1
+  2) gentoo/2020      5) intel/2020.1.217   8) openmpi/4.0.3
+  3) gcccore/.9.3.0   6) ucx/1.8.0          9) StdEnv/2020
+Restoring modules from user's whole_canonical_modules
+-------------------------------------------------------------------------------
+The following dependent module(s) are not currently loaded: gcccore/.8.3.0 (required by: icc/.2019.3.199, ifort/.2019.3.199)
+-------------------------------------------------------------------------------

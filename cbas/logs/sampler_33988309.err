@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "cbas/sampler.py", line 24, in <module>
+    from rdkit.Chem import MolToInchi
+ImportError: cannot import name 'MolToInchi' from 'rdkit.Chem' (/cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc7.3/rdkit/2019.03.4/lib/python3.7/site-packages/rdkit/Chem/__init__.py)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "cbas/sampler.py", line 26, in <module>
+    from rdkit.Chem.rdinchi import MolToInchi
+ModuleNotFoundError: No module named 'rdkit.Chem.rdinchi'

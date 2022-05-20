@@ -1,0 +1,420 @@
+2022-02-22 21:29:54,361 INFO:main.py:240:print_splash_screen:PDB2PQR v3.5.2: biomolecular structure conversion software.
+2022-02-22 21:29:54,361 INFO:main.py:242:print_splash_screen:Please cite:  Jurrus E, et al.  Improvements to the APBS biomolecular solvation software suite.  Protein Sci 27 112-128 (2018).
+2022-02-22 21:29:54,361 INFO:main.py:242:print_splash_screen:Please cite:  Dolinsky TJ, et al.  PDB2PQR: expanding and upgrading automated preparation of biomolecular structures for molecular simulations. Nucleic Acids Res 35 W522-W525 (2007).
+2022-02-22 21:29:54,361 INFO:main.py:752:main_driver:Checking and transforming input arguments.
+2022-02-22 21:29:54,362 INFO:main.py:756:main_driver:Loading topology files.
+2022-02-22 21:29:54,409 INFO:main.py:758:main_driver:Loading molecule: /home/etienne-reboul/Canada_internship/OptiMol-master/docking/data_docking/RNA_only_6UC9.pdb
+2022-02-22 21:29:54,415 INFO:main.py:763:main_driver:Setting up molecule.
+2022-02-22 21:29:54,430 INFO:main.py:409:setup_molecule:Created biomolecule object with 67 residues and 1422 atoms.
+2022-02-22 21:29:54,430 INFO:main.py:767:main_driver:Setting termini states for biomolecule chains.
+2022-02-22 21:29:54,432 INFO:main.py:603:non_trivial:Loading forcefield.
+2022-02-22 21:29:54,447 INFO:main.py:607:non_trivial:Loading hydrogen topology definitions.
+2022-02-22 21:29:54,448 INFO:main.py:459:is_repairable:This biomolecule is clean.  No repair needed.
+2022-02-22 21:29:54,448 INFO:main.py:622:non_trivial:Updating disulfide bridges.
+2022-02-22 21:29:54,448 INFO:main.py:625:non_trivial:Debumping biomolecule.
+2022-02-22 21:29:54,452 INFO:main.py:642:non_trivial:Adding hydrogens to biomolecule.
+2022-02-22 21:29:54,452 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 21:29:54,453 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 21:29:54,453 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 21:29:54,453 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 21:29:54,453 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 21:29:54,453 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 21:29:54,453 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 21:29:54,454 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 21:29:54,454 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 21:29:54,454 WARNING:io.py:41:filter:Suppressing further "Tetrahedral hydrogen reconstruction" messages
+2022-02-22 21:29:54,563 INFO:main.py:645:non_trivial:Debumping biomolecule (again).
+2022-02-22 21:29:54,568 INFO:main.py:647:non_trivial:Optimizing hydrogen bonds
+2022-02-22 21:29:54,573 INFO:main.py:659:non_trivial:Applying force field to biomolecule states.
+2022-02-22 21:29:54,573 WARNING:biomolecule.py:727:apply_force_field:Residue RG B 15 has non-integer charge: -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001. 
+2022-02-22 21:29:54,575 WARNING:biomolecule.py:727:apply_force_field:Residue RC B 81 has non-integer charge: -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001. 
+2022-02-22 21:29:54,575 WARNING:main.py:693:non_trivial:Residue RG B 15 has non-integer charge:  -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001
+2022-02-22 21:29:54,575 WARNING:main.py:693:non_trivial:Residue RC B 81 has non-integer charge:  -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001
+2022-02-22 21:29:54,575 INFO:main.py:706:non_trivial:Regenerating headers.
+2022-02-22 21:29:54,575 INFO:main.py:731:non_trivial:Regenerating PDB lines.
+2022-02-22 21:29:54,586 WARNING:main.py:312:print_pqr:Ignoring 392 header lines in output.
+2022-02-22 21:40:19,372 INFO:main.py:240:print_splash_screen:PDB2PQR v3.5.2: biomolecular structure conversion software.
+2022-02-22 21:40:19,372 INFO:main.py:242:print_splash_screen:Please cite:  Jurrus E, et al.  Improvements to the APBS biomolecular solvation software suite.  Protein Sci 27 112-128 (2018).
+2022-02-22 21:40:19,372 INFO:main.py:242:print_splash_screen:Please cite:  Dolinsky TJ, et al.  PDB2PQR: expanding and upgrading automated preparation of biomolecular structures for molecular simulations. Nucleic Acids Res 35 W522-W525 (2007).
+2022-02-22 21:40:19,372 INFO:main.py:752:main_driver:Checking and transforming input arguments.
+2022-02-22 21:40:19,373 INFO:main.py:756:main_driver:Loading topology files.
+2022-02-22 21:40:19,426 INFO:main.py:758:main_driver:Loading molecule: /home/etienne-reboul/Canada_internship/OptiMol-master/docking/data_docking/RNA_only_6UC9.pdb
+2022-02-22 21:40:19,433 INFO:main.py:763:main_driver:Setting up molecule.
+2022-02-22 21:40:19,447 INFO:main.py:409:setup_molecule:Created biomolecule object with 67 residues and 1422 atoms.
+2022-02-22 21:40:19,447 INFO:main.py:767:main_driver:Setting termini states for biomolecule chains.
+2022-02-22 21:40:19,449 INFO:main.py:603:non_trivial:Loading forcefield.
+2022-02-22 21:40:19,455 INFO:main.py:607:non_trivial:Loading hydrogen topology definitions.
+2022-02-22 21:40:19,457 INFO:main.py:459:is_repairable:This biomolecule is clean.  No repair needed.
+2022-02-22 21:40:19,457 INFO:main.py:622:non_trivial:Updating disulfide bridges.
+2022-02-22 21:40:19,457 INFO:main.py:625:non_trivial:Debumping biomolecule.
+2022-02-22 21:40:19,461 INFO:main.py:642:non_trivial:Adding hydrogens to biomolecule.
+2022-02-22 21:40:19,461 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 21:40:19,461 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 21:40:19,462 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 21:40:19,462 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 21:40:19,462 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 21:40:19,462 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 21:40:19,463 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 21:40:19,463 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 21:40:19,463 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 21:40:19,463 WARNING:io.py:41:filter:Suppressing further "Tetrahedral hydrogen reconstruction" messages
+2022-02-22 21:40:19,583 INFO:main.py:645:non_trivial:Debumping biomolecule (again).
+2022-02-22 21:40:19,588 INFO:main.py:647:non_trivial:Optimizing hydrogen bonds
+2022-02-22 21:40:19,593 INFO:main.py:659:non_trivial:Applying force field to biomolecule states.
+2022-02-22 21:40:19,593 WARNING:biomolecule.py:727:apply_force_field:Residue RG B 15 has non-integer charge: -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001. 
+2022-02-22 21:40:19,595 WARNING:biomolecule.py:727:apply_force_field:Residue RC B 81 has non-integer charge: -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001. 
+2022-02-22 21:40:19,595 WARNING:main.py:693:non_trivial:Residue RG B 15 has non-integer charge:  -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001
+2022-02-22 21:40:19,595 WARNING:main.py:693:non_trivial:Residue RC B 81 has non-integer charge:  -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001
+2022-02-22 21:40:19,595 INFO:main.py:706:non_trivial:Regenerating headers.
+2022-02-22 21:40:19,595 INFO:main.py:731:non_trivial:Regenerating PDB lines.
+2022-02-22 21:40:19,607 WARNING:main.py:312:print_pqr:Ignoring 392 header lines in output.
+2022-02-22 22:01:09,160 INFO:main.py:240:print_splash_screen:PDB2PQR v3.5.2: biomolecular structure conversion software.
+2022-02-22 22:01:09,160 INFO:main.py:242:print_splash_screen:Please cite:  Jurrus E, et al.  Improvements to the APBS biomolecular solvation software suite.  Protein Sci 27 112-128 (2018).
+2022-02-22 22:01:09,160 INFO:main.py:242:print_splash_screen:Please cite:  Dolinsky TJ, et al.  PDB2PQR: expanding and upgrading automated preparation of biomolecular structures for molecular simulations. Nucleic Acids Res 35 W522-W525 (2007).
+2022-02-22 22:01:09,160 INFO:main.py:752:main_driver:Checking and transforming input arguments.
+2022-02-22 22:01:09,161 INFO:main.py:756:main_driver:Loading topology files.
+2022-02-22 22:01:09,212 INFO:main.py:758:main_driver:Loading molecule: /home/etienne-reboul/Canada_internship/OptiMol-master/docking/data_docking/RNA_only_6UC9.pdb
+2022-02-22 22:01:09,219 INFO:main.py:763:main_driver:Setting up molecule.
+2022-02-22 22:01:09,232 INFO:main.py:409:setup_molecule:Created biomolecule object with 67 residues and 1422 atoms.
+2022-02-22 22:01:09,233 INFO:main.py:767:main_driver:Setting termini states for biomolecule chains.
+2022-02-22 22:01:09,235 INFO:main.py:603:non_trivial:Loading forcefield.
+2022-02-22 22:01:09,241 INFO:main.py:607:non_trivial:Loading hydrogen topology definitions.
+2022-02-22 22:01:09,242 INFO:main.py:459:is_repairable:This biomolecule is clean.  No repair needed.
+2022-02-22 22:01:09,242 INFO:main.py:622:non_trivial:Updating disulfide bridges.
+2022-02-22 22:01:09,242 INFO:main.py:625:non_trivial:Debumping biomolecule.
+2022-02-22 22:01:09,246 INFO:main.py:642:non_trivial:Adding hydrogens to biomolecule.
+2022-02-22 22:01:09,247 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:01:09,247 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:01:09,247 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:01:09,247 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:01:09,247 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:01:09,248 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:01:09,248 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:01:09,248 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:01:09,248 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:01:09,249 WARNING:io.py:41:filter:Suppressing further "Tetrahedral hydrogen reconstruction" messages
+2022-02-22 22:01:09,365 INFO:main.py:645:non_trivial:Debumping biomolecule (again).
+2022-02-22 22:01:09,370 INFO:main.py:647:non_trivial:Optimizing hydrogen bonds
+2022-02-22 22:01:09,375 INFO:main.py:659:non_trivial:Applying force field to biomolecule states.
+2022-02-22 22:01:09,376 WARNING:biomolecule.py:727:apply_force_field:Residue RG B 15 has non-integer charge: -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001. 
+2022-02-22 22:01:09,377 WARNING:biomolecule.py:727:apply_force_field:Residue RC B 81 has non-integer charge: -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001. 
+2022-02-22 22:01:09,377 WARNING:main.py:693:non_trivial:Residue RG B 15 has non-integer charge:  -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001
+2022-02-22 22:01:09,377 WARNING:main.py:693:non_trivial:Residue RC B 81 has non-integer charge:  -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001
+2022-02-22 22:01:09,378 INFO:main.py:706:non_trivial:Regenerating headers.
+2022-02-22 22:01:09,378 INFO:main.py:731:non_trivial:Regenerating PDB lines.
+2022-02-22 22:01:09,389 WARNING:main.py:312:print_pqr:Ignoring 392 header lines in output.
+2022-02-22 22:24:17,139 INFO:main.py:240:print_splash_screen:PDB2PQR v3.5.2: biomolecular structure conversion software.
+2022-02-22 22:24:17,140 INFO:main.py:242:print_splash_screen:Please cite:  Jurrus E, et al.  Improvements to the APBS biomolecular solvation software suite.  Protein Sci 27 112-128 (2018).
+2022-02-22 22:24:17,140 INFO:main.py:242:print_splash_screen:Please cite:  Dolinsky TJ, et al.  PDB2PQR: expanding and upgrading automated preparation of biomolecular structures for molecular simulations. Nucleic Acids Res 35 W522-W525 (2007).
+2022-02-22 22:24:17,140 INFO:main.py:752:main_driver:Checking and transforming input arguments.
+2022-02-22 22:24:17,140 INFO:main.py:756:main_driver:Loading topology files.
+2022-02-22 22:24:17,188 INFO:main.py:758:main_driver:Loading molecule: /home/etienne-reboul/Canada_internship/OptiMol-master/docking/data_docking/RNA_only_6UC9.pdb
+2022-02-22 22:24:17,194 INFO:main.py:763:main_driver:Setting up molecule.
+2022-02-22 22:24:17,208 INFO:main.py:409:setup_molecule:Created biomolecule object with 67 residues and 1422 atoms.
+2022-02-22 22:24:17,208 INFO:main.py:767:main_driver:Setting termini states for biomolecule chains.
+2022-02-22 22:24:17,210 INFO:main.py:603:non_trivial:Loading forcefield.
+2022-02-22 22:24:17,216 INFO:main.py:607:non_trivial:Loading hydrogen topology definitions.
+2022-02-22 22:24:17,217 INFO:main.py:459:is_repairable:This biomolecule is clean.  No repair needed.
+2022-02-22 22:24:17,217 INFO:main.py:622:non_trivial:Updating disulfide bridges.
+2022-02-22 22:24:17,218 INFO:main.py:625:non_trivial:Debumping biomolecule.
+2022-02-22 22:24:17,221 INFO:main.py:642:non_trivial:Adding hydrogens to biomolecule.
+2022-02-22 22:24:17,221 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:24:17,222 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:24:17,222 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:24:17,222 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:24:17,222 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:24:17,222 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:24:17,222 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:24:17,223 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:24:17,223 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:24:17,223 WARNING:io.py:41:filter:Suppressing further "Tetrahedral hydrogen reconstruction" messages
+2022-02-22 22:24:17,330 INFO:main.py:645:non_trivial:Debumping biomolecule (again).
+2022-02-22 22:24:17,335 INFO:main.py:647:non_trivial:Optimizing hydrogen bonds
+2022-02-22 22:24:17,340 INFO:main.py:659:non_trivial:Applying force field to biomolecule states.
+2022-02-22 22:24:17,340 WARNING:biomolecule.py:727:apply_force_field:Residue RG B 15 has non-integer charge: -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001. 
+2022-02-22 22:24:17,342 WARNING:biomolecule.py:727:apply_force_field:Residue RC B 81 has non-integer charge: -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001. 
+2022-02-22 22:24:17,342 WARNING:main.py:693:non_trivial:Residue RG B 15 has non-integer charge:  -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001
+2022-02-22 22:24:17,342 WARNING:main.py:693:non_trivial:Residue RC B 81 has non-integer charge:  -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001
+2022-02-22 22:24:17,342 INFO:main.py:706:non_trivial:Regenerating headers.
+2022-02-22 22:24:17,342 INFO:main.py:731:non_trivial:Regenerating PDB lines.
+2022-02-22 22:24:17,353 WARNING:main.py:312:print_pqr:Ignoring 392 header lines in output.
+2022-02-22 22:33:56,743 INFO:main.py:240:print_splash_screen:PDB2PQR v3.5.2: biomolecular structure conversion software.
+2022-02-22 22:33:56,743 INFO:main.py:242:print_splash_screen:Please cite:  Jurrus E, et al.  Improvements to the APBS biomolecular solvation software suite.  Protein Sci 27 112-128 (2018).
+2022-02-22 22:33:56,743 INFO:main.py:242:print_splash_screen:Please cite:  Dolinsky TJ, et al.  PDB2PQR: expanding and upgrading automated preparation of biomolecular structures for molecular simulations. Nucleic Acids Res 35 W522-W525 (2007).
+2022-02-22 22:33:56,743 INFO:main.py:752:main_driver:Checking and transforming input arguments.
+2022-02-22 22:33:56,743 INFO:main.py:756:main_driver:Loading topology files.
+2022-02-22 22:33:56,793 INFO:main.py:758:main_driver:Loading molecule: /home/etienne-reboul/Canada_internship/OptiMol-master/docking/data_docking/RNA_only_6UC9.pdb
+2022-02-22 22:33:56,799 INFO:main.py:763:main_driver:Setting up molecule.
+2022-02-22 22:33:56,813 INFO:main.py:409:setup_molecule:Created biomolecule object with 67 residues and 1422 atoms.
+2022-02-22 22:33:56,813 INFO:main.py:767:main_driver:Setting termini states for biomolecule chains.
+2022-02-22 22:33:56,815 INFO:main.py:603:non_trivial:Loading forcefield.
+2022-02-22 22:33:56,821 INFO:main.py:607:non_trivial:Loading hydrogen topology definitions.
+2022-02-22 22:33:56,822 INFO:main.py:459:is_repairable:This biomolecule is clean.  No repair needed.
+2022-02-22 22:33:56,822 INFO:main.py:622:non_trivial:Updating disulfide bridges.
+2022-02-22 22:33:56,822 INFO:main.py:625:non_trivial:Debumping biomolecule.
+2022-02-22 22:33:56,826 INFO:main.py:642:non_trivial:Adding hydrogens to biomolecule.
+2022-02-22 22:33:56,826 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:33:56,827 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:33:56,827 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:33:56,827 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:33:56,827 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:33:56,827 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:33:56,828 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:33:56,828 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:33:56,828 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:33:56,828 WARNING:io.py:41:filter:Suppressing further "Tetrahedral hydrogen reconstruction" messages
+2022-02-22 22:33:56,942 INFO:main.py:645:non_trivial:Debumping biomolecule (again).
+2022-02-22 22:33:56,947 INFO:main.py:647:non_trivial:Optimizing hydrogen bonds
+2022-02-22 22:33:56,952 INFO:main.py:659:non_trivial:Applying force field to biomolecule states.
+2022-02-22 22:33:56,952 WARNING:biomolecule.py:727:apply_force_field:Residue RG B 15 has non-integer charge: -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001. 
+2022-02-22 22:33:56,953 WARNING:biomolecule.py:727:apply_force_field:Residue RC B 81 has non-integer charge: -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001. 
+2022-02-22 22:33:56,953 WARNING:main.py:693:non_trivial:Residue RG B 15 has non-integer charge:  -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001
+2022-02-22 22:33:56,954 WARNING:main.py:693:non_trivial:Residue RC B 81 has non-integer charge:  -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001
+2022-02-22 22:33:56,954 INFO:main.py:706:non_trivial:Regenerating headers.
+2022-02-22 22:33:56,954 INFO:main.py:731:non_trivial:Regenerating PDB lines.
+2022-02-22 22:33:56,965 WARNING:main.py:312:print_pqr:Ignoring 392 header lines in output.
+2022-02-22 22:38:33,530 INFO:main.py:240:print_splash_screen:PDB2PQR v3.5.2: biomolecular structure conversion software.
+2022-02-22 22:38:33,530 INFO:main.py:242:print_splash_screen:Please cite:  Jurrus E, et al.  Improvements to the APBS biomolecular solvation software suite.  Protein Sci 27 112-128 (2018).
+2022-02-22 22:38:33,530 INFO:main.py:242:print_splash_screen:Please cite:  Dolinsky TJ, et al.  PDB2PQR: expanding and upgrading automated preparation of biomolecular structures for molecular simulations. Nucleic Acids Res 35 W522-W525 (2007).
+2022-02-22 22:38:33,531 INFO:main.py:752:main_driver:Checking and transforming input arguments.
+2022-02-22 22:38:33,532 INFO:main.py:756:main_driver:Loading topology files.
+2022-02-22 22:38:33,586 INFO:main.py:758:main_driver:Loading molecule: /home/etienne-reboul/Canada_internship/OptiMol-master/docking/data_docking/RNA_only_6UC9.pdb
+2022-02-22 22:38:33,594 INFO:main.py:763:main_driver:Setting up molecule.
+2022-02-22 22:38:33,611 INFO:main.py:409:setup_molecule:Created biomolecule object with 67 residues and 1422 atoms.
+2022-02-22 22:38:33,611 INFO:main.py:767:main_driver:Setting termini states for biomolecule chains.
+2022-02-22 22:38:33,613 INFO:main.py:603:non_trivial:Loading forcefield.
+2022-02-22 22:38:33,619 INFO:main.py:607:non_trivial:Loading hydrogen topology definitions.
+2022-02-22 22:38:33,621 INFO:main.py:459:is_repairable:This biomolecule is clean.  No repair needed.
+2022-02-22 22:38:33,621 INFO:main.py:622:non_trivial:Updating disulfide bridges.
+2022-02-22 22:38:33,621 INFO:main.py:625:non_trivial:Debumping biomolecule.
+2022-02-22 22:38:33,626 INFO:main.py:642:non_trivial:Adding hydrogens to biomolecule.
+2022-02-22 22:38:33,626 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:38:33,626 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:38:33,627 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:38:33,627 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:38:33,627 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:38:33,627 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:38:33,627 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:38:33,628 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:38:33,628 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:38:33,628 WARNING:io.py:41:filter:Suppressing further "Tetrahedral hydrogen reconstruction" messages
+2022-02-22 22:38:33,746 INFO:main.py:645:non_trivial:Debumping biomolecule (again).
+2022-02-22 22:38:33,752 INFO:main.py:647:non_trivial:Optimizing hydrogen bonds
+2022-02-22 22:38:33,757 INFO:main.py:659:non_trivial:Applying force field to biomolecule states.
+2022-02-22 22:38:33,757 WARNING:biomolecule.py:727:apply_force_field:Residue RG B 15 has non-integer charge: -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001. 
+2022-02-22 22:38:33,758 WARNING:biomolecule.py:727:apply_force_field:Residue RC B 81 has non-integer charge: -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001. 
+2022-02-22 22:38:33,758 WARNING:main.py:693:non_trivial:Residue RG B 15 has non-integer charge:  -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001
+2022-02-22 22:38:33,759 WARNING:main.py:693:non_trivial:Residue RC B 81 has non-integer charge:  -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001
+2022-02-22 22:38:33,759 INFO:main.py:706:non_trivial:Regenerating headers.
+2022-02-22 22:38:33,759 INFO:main.py:731:non_trivial:Regenerating PDB lines.
+2022-02-22 22:38:33,770 WARNING:main.py:312:print_pqr:Ignoring 392 header lines in output.
+2022-02-22 22:41:14,745 INFO:main.py:240:print_splash_screen:PDB2PQR v3.5.2: biomolecular structure conversion software.
+2022-02-22 22:41:14,745 INFO:main.py:242:print_splash_screen:Please cite:  Jurrus E, et al.  Improvements to the APBS biomolecular solvation software suite.  Protein Sci 27 112-128 (2018).
+2022-02-22 22:41:14,745 INFO:main.py:242:print_splash_screen:Please cite:  Dolinsky TJ, et al.  PDB2PQR: expanding and upgrading automated preparation of biomolecular structures for molecular simulations. Nucleic Acids Res 35 W522-W525 (2007).
+2022-02-22 22:41:14,745 INFO:main.py:752:main_driver:Checking and transforming input arguments.
+2022-02-22 22:41:14,745 INFO:main.py:756:main_driver:Loading topology files.
+2022-02-22 22:41:14,796 INFO:main.py:758:main_driver:Loading molecule: /home/etienne-reboul/Canada_internship/OptiMol-master/docking/data_docking/RNA_only_6UC9.pdb
+2022-02-22 22:41:14,803 INFO:main.py:763:main_driver:Setting up molecule.
+2022-02-22 22:41:14,816 INFO:main.py:409:setup_molecule:Created biomolecule object with 67 residues and 1422 atoms.
+2022-02-22 22:41:14,816 INFO:main.py:767:main_driver:Setting termini states for biomolecule chains.
+2022-02-22 22:41:14,819 INFO:main.py:603:non_trivial:Loading forcefield.
+2022-02-22 22:41:14,825 INFO:main.py:607:non_trivial:Loading hydrogen topology definitions.
+2022-02-22 22:41:14,826 INFO:main.py:459:is_repairable:This biomolecule is clean.  No repair needed.
+2022-02-22 22:41:14,826 INFO:main.py:622:non_trivial:Updating disulfide bridges.
+2022-02-22 22:41:14,826 INFO:main.py:625:non_trivial:Debumping biomolecule.
+2022-02-22 22:41:14,830 INFO:main.py:642:non_trivial:Adding hydrogens to biomolecule.
+2022-02-22 22:41:14,830 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:41:14,831 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:41:14,831 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:41:14,831 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:41:14,831 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:41:14,831 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:41:14,832 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:41:14,832 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:41:14,832 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:41:14,832 WARNING:io.py:41:filter:Suppressing further "Tetrahedral hydrogen reconstruction" messages
+2022-02-22 22:41:14,948 INFO:main.py:645:non_trivial:Debumping biomolecule (again).
+2022-02-22 22:41:14,953 INFO:main.py:647:non_trivial:Optimizing hydrogen bonds
+2022-02-22 22:41:14,958 INFO:main.py:659:non_trivial:Applying force field to biomolecule states.
+2022-02-22 22:41:14,958 WARNING:biomolecule.py:727:apply_force_field:Residue RG B 15 has non-integer charge: -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001. 
+2022-02-22 22:41:14,960 WARNING:biomolecule.py:727:apply_force_field:Residue RC B 81 has non-integer charge: -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001. 
+2022-02-22 22:41:14,960 WARNING:main.py:693:non_trivial:Residue RG B 15 has non-integer charge:  -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001
+2022-02-22 22:41:14,960 WARNING:main.py:693:non_trivial:Residue RC B 81 has non-integer charge:  -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001
+2022-02-22 22:41:14,960 INFO:main.py:706:non_trivial:Regenerating headers.
+2022-02-22 22:41:14,960 INFO:main.py:731:non_trivial:Regenerating PDB lines.
+2022-02-22 22:41:14,971 WARNING:main.py:312:print_pqr:Ignoring 392 header lines in output.
+2022-02-22 22:49:59,385 INFO:main.py:240:print_splash_screen:PDB2PQR v3.5.2: biomolecular structure conversion software.
+2022-02-22 22:49:59,385 INFO:main.py:242:print_splash_screen:Please cite:  Jurrus E, et al.  Improvements to the APBS biomolecular solvation software suite.  Protein Sci 27 112-128 (2018).
+2022-02-22 22:49:59,385 INFO:main.py:242:print_splash_screen:Please cite:  Dolinsky TJ, et al.  PDB2PQR: expanding and upgrading automated preparation of biomolecular structures for molecular simulations. Nucleic Acids Res 35 W522-W525 (2007).
+2022-02-22 22:49:59,385 INFO:main.py:752:main_driver:Checking and transforming input arguments.
+2022-02-22 22:49:59,386 INFO:main.py:756:main_driver:Loading topology files.
+2022-02-22 22:49:59,438 INFO:main.py:758:main_driver:Loading molecule: /home/etienne-reboul/Canada_internship/OptiMol-master/docking/data_docking/RNA_only_6UC9.pdb
+2022-02-22 22:49:59,445 INFO:main.py:763:main_driver:Setting up molecule.
+2022-02-22 22:49:59,459 INFO:main.py:409:setup_molecule:Created biomolecule object with 67 residues and 1422 atoms.
+2022-02-22 22:49:59,459 INFO:main.py:767:main_driver:Setting termini states for biomolecule chains.
+2022-02-22 22:49:59,462 INFO:main.py:603:non_trivial:Loading forcefield.
+2022-02-22 22:49:59,468 INFO:main.py:607:non_trivial:Loading hydrogen topology definitions.
+2022-02-22 22:49:59,469 INFO:main.py:459:is_repairable:This biomolecule is clean.  No repair needed.
+2022-02-22 22:49:59,469 INFO:main.py:622:non_trivial:Updating disulfide bridges.
+2022-02-22 22:49:59,470 INFO:main.py:625:non_trivial:Debumping biomolecule.
+2022-02-22 22:49:59,474 INFO:main.py:642:non_trivial:Adding hydrogens to biomolecule.
+2022-02-22 22:49:59,474 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:49:59,474 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:49:59,474 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:49:59,474 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:49:59,475 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:49:59,475 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:49:59,475 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:49:59,475 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:49:59,475 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:49:59,476 WARNING:io.py:41:filter:Suppressing further "Tetrahedral hydrogen reconstruction" messages
+2022-02-22 22:49:59,593 INFO:main.py:645:non_trivial:Debumping biomolecule (again).
+2022-02-22 22:49:59,599 INFO:main.py:647:non_trivial:Optimizing hydrogen bonds
+2022-02-22 22:49:59,604 INFO:main.py:659:non_trivial:Applying force field to biomolecule states.
+2022-02-22 22:49:59,604 WARNING:biomolecule.py:727:apply_force_field:Residue RG B 15 has non-integer charge: -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001. 
+2022-02-22 22:49:59,606 WARNING:biomolecule.py:727:apply_force_field:Residue RC B 81 has non-integer charge: -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001. 
+2022-02-22 22:49:59,606 WARNING:main.py:693:non_trivial:Residue RG B 15 has non-integer charge:  -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001
+2022-02-22 22:49:59,606 WARNING:main.py:693:non_trivial:Residue RC B 81 has non-integer charge:  -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001
+2022-02-22 22:49:59,606 INFO:main.py:706:non_trivial:Regenerating headers.
+2022-02-22 22:49:59,606 INFO:main.py:731:non_trivial:Regenerating PDB lines.
+2022-02-22 22:49:59,618 WARNING:main.py:312:print_pqr:Ignoring 392 header lines in output.
+2022-02-22 22:50:52,848 INFO:main.py:240:print_splash_screen:PDB2PQR v3.5.2: biomolecular structure conversion software.
+2022-02-22 22:50:52,848 INFO:main.py:242:print_splash_screen:Please cite:  Jurrus E, et al.  Improvements to the APBS biomolecular solvation software suite.  Protein Sci 27 112-128 (2018).
+2022-02-22 22:50:52,848 INFO:main.py:242:print_splash_screen:Please cite:  Dolinsky TJ, et al.  PDB2PQR: expanding and upgrading automated preparation of biomolecular structures for molecular simulations. Nucleic Acids Res 35 W522-W525 (2007).
+2022-02-22 22:50:52,848 INFO:main.py:752:main_driver:Checking and transforming input arguments.
+2022-02-22 22:50:52,848 INFO:main.py:756:main_driver:Loading topology files.
+2022-02-22 22:50:52,896 INFO:main.py:758:main_driver:Loading molecule: /home/etienne-reboul/Canada_internship/OptiMol-master/docking/data_docking/RNA_only_6UC9.pdb
+2022-02-22 22:50:52,902 INFO:main.py:763:main_driver:Setting up molecule.
+2022-02-22 22:50:52,916 INFO:main.py:409:setup_molecule:Created biomolecule object with 67 residues and 1422 atoms.
+2022-02-22 22:50:52,916 INFO:main.py:767:main_driver:Setting termini states for biomolecule chains.
+2022-02-22 22:50:52,918 INFO:main.py:603:non_trivial:Loading forcefield.
+2022-02-22 22:50:52,924 INFO:main.py:607:non_trivial:Loading hydrogen topology definitions.
+2022-02-22 22:50:52,925 INFO:main.py:459:is_repairable:This biomolecule is clean.  No repair needed.
+2022-02-22 22:50:52,926 INFO:main.py:622:non_trivial:Updating disulfide bridges.
+2022-02-22 22:50:52,926 INFO:main.py:625:non_trivial:Debumping biomolecule.
+2022-02-22 22:50:52,929 INFO:main.py:642:non_trivial:Adding hydrogens to biomolecule.
+2022-02-22 22:50:52,929 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:50:52,930 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:50:52,930 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:50:52,930 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:50:52,930 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:50:52,930 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:50:52,931 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:50:52,931 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:50:52,931 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 22:50:52,931 WARNING:io.py:41:filter:Suppressing further "Tetrahedral hydrogen reconstruction" messages
+2022-02-22 22:50:53,039 INFO:main.py:645:non_trivial:Debumping biomolecule (again).
+2022-02-22 22:50:53,044 INFO:main.py:647:non_trivial:Optimizing hydrogen bonds
+2022-02-22 22:50:53,048 INFO:main.py:659:non_trivial:Applying force field to biomolecule states.
+2022-02-22 22:50:53,048 WARNING:biomolecule.py:727:apply_force_field:Residue RG B 15 has non-integer charge: -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001. 
+2022-02-22 22:50:53,050 WARNING:biomolecule.py:727:apply_force_field:Residue RC B 81 has non-integer charge: -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001. 
+2022-02-22 22:50:53,050 WARNING:main.py:693:non_trivial:Residue RG B 15 has non-integer charge:  -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001
+2022-02-22 22:50:53,050 WARNING:main.py:693:non_trivial:Residue RC B 81 has non-integer charge:  -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001
+2022-02-22 22:50:53,050 INFO:main.py:706:non_trivial:Regenerating headers.
+2022-02-22 22:50:53,051 INFO:main.py:731:non_trivial:Regenerating PDB lines.
+2022-02-22 22:50:53,061 WARNING:main.py:312:print_pqr:Ignoring 392 header lines in output.
+2022-02-22 23:01:55,547 INFO:main.py:240:print_splash_screen:PDB2PQR v3.5.2: biomolecular structure conversion software.
+2022-02-22 23:01:55,547 INFO:main.py:242:print_splash_screen:Please cite:  Jurrus E, et al.  Improvements to the APBS biomolecular solvation software suite.  Protein Sci 27 112-128 (2018).
+2022-02-22 23:01:55,547 INFO:main.py:242:print_splash_screen:Please cite:  Dolinsky TJ, et al.  PDB2PQR: expanding and upgrading automated preparation of biomolecular structures for molecular simulations. Nucleic Acids Res 35 W522-W525 (2007).
+2022-02-22 23:01:55,547 INFO:main.py:752:main_driver:Checking and transforming input arguments.
+2022-02-22 23:01:55,547 INFO:main.py:756:main_driver:Loading topology files.
+2022-02-22 23:01:55,596 INFO:main.py:758:main_driver:Loading molecule: /home/etienne-reboul/Canada_internship/OptiMol-master/docking/data_docking/RNA_only_6UC9.pdb
+2022-02-22 23:01:55,602 INFO:main.py:763:main_driver:Setting up molecule.
+2022-02-22 23:01:55,616 INFO:main.py:409:setup_molecule:Created biomolecule object with 67 residues and 1422 atoms.
+2022-02-22 23:01:55,616 INFO:main.py:767:main_driver:Setting termini states for biomolecule chains.
+2022-02-22 23:01:55,618 INFO:main.py:603:non_trivial:Loading forcefield.
+2022-02-22 23:01:55,624 INFO:main.py:607:non_trivial:Loading hydrogen topology definitions.
+2022-02-22 23:01:55,626 INFO:main.py:459:is_repairable:This biomolecule is clean.  No repair needed.
+2022-02-22 23:01:55,626 INFO:main.py:622:non_trivial:Updating disulfide bridges.
+2022-02-22 23:01:55,626 INFO:main.py:625:non_trivial:Debumping biomolecule.
+2022-02-22 23:01:55,629 INFO:main.py:642:non_trivial:Adding hydrogens to biomolecule.
+2022-02-22 23:01:55,630 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 23:01:55,630 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 23:01:55,630 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 23:01:55,630 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 23:01:55,630 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 23:01:55,631 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 23:01:55,631 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 23:01:55,631 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 23:01:55,631 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 23:01:55,631 WARNING:io.py:41:filter:Suppressing further "Tetrahedral hydrogen reconstruction" messages
+2022-02-22 23:01:55,743 INFO:main.py:645:non_trivial:Debumping biomolecule (again).
+2022-02-22 23:01:55,748 INFO:main.py:647:non_trivial:Optimizing hydrogen bonds
+2022-02-22 23:01:55,753 INFO:main.py:659:non_trivial:Applying force field to biomolecule states.
+2022-02-22 23:01:55,753 WARNING:biomolecule.py:727:apply_force_field:Residue RG B 15 has non-integer charge: -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001. 
+2022-02-22 23:01:55,755 WARNING:biomolecule.py:727:apply_force_field:Residue RC B 81 has non-integer charge: -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001. 
+2022-02-22 23:01:55,755 WARNING:main.py:693:non_trivial:Residue RG B 15 has non-integer charge:  -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001
+2022-02-22 23:01:55,755 WARNING:main.py:693:non_trivial:Residue RC B 81 has non-integer charge:  -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001
+2022-02-22 23:01:55,755 INFO:main.py:706:non_trivial:Regenerating headers.
+2022-02-22 23:01:55,755 INFO:main.py:731:non_trivial:Regenerating PDB lines.
+2022-02-22 23:01:55,766 WARNING:main.py:312:print_pqr:Ignoring 392 header lines in output.
+2022-02-22 23:09:12,811 INFO:main.py:240:print_splash_screen:PDB2PQR v3.5.2: biomolecular structure conversion software.
+2022-02-22 23:09:12,812 INFO:main.py:242:print_splash_screen:Please cite:  Jurrus E, et al.  Improvements to the APBS biomolecular solvation software suite.  Protein Sci 27 112-128 (2018).
+2022-02-22 23:09:12,812 INFO:main.py:242:print_splash_screen:Please cite:  Dolinsky TJ, et al.  PDB2PQR: expanding and upgrading automated preparation of biomolecular structures for molecular simulations. Nucleic Acids Res 35 W522-W525 (2007).
+2022-02-22 23:09:12,812 INFO:main.py:752:main_driver:Checking and transforming input arguments.
+2022-02-22 23:09:12,812 INFO:main.py:756:main_driver:Loading topology files.
+2022-02-22 23:09:12,860 INFO:main.py:758:main_driver:Loading molecule: /home/etienne-reboul/Canada_internship/OptiMol-master/docking/data_docking/RNA_only_6UC9.pdb
+2022-02-22 23:09:12,866 INFO:main.py:763:main_driver:Setting up molecule.
+2022-02-22 23:09:12,880 INFO:main.py:409:setup_molecule:Created biomolecule object with 67 residues and 1422 atoms.
+2022-02-22 23:09:12,880 INFO:main.py:767:main_driver:Setting termini states for biomolecule chains.
+2022-02-22 23:09:12,882 INFO:main.py:603:non_trivial:Loading forcefield.
+2022-02-22 23:09:12,888 INFO:main.py:607:non_trivial:Loading hydrogen topology definitions.
+2022-02-22 23:09:12,889 INFO:main.py:459:is_repairable:This biomolecule is clean.  No repair needed.
+2022-02-22 23:09:12,889 INFO:main.py:622:non_trivial:Updating disulfide bridges.
+2022-02-22 23:09:12,889 INFO:main.py:625:non_trivial:Debumping biomolecule.
+2022-02-22 23:09:12,893 INFO:main.py:642:non_trivial:Adding hydrogens to biomolecule.
+2022-02-22 23:09:12,893 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 23:09:12,893 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 23:09:12,894 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 23:09:12,894 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 23:09:12,894 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 23:09:12,894 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 23:09:12,894 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 23:09:12,895 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 23:09:12,895 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-22 23:09:12,895 WARNING:io.py:41:filter:Suppressing further "Tetrahedral hydrogen reconstruction" messages
+2022-02-22 23:09:13,004 INFO:main.py:645:non_trivial:Debumping biomolecule (again).
+2022-02-22 23:09:13,009 INFO:main.py:647:non_trivial:Optimizing hydrogen bonds
+2022-02-22 23:09:13,013 INFO:main.py:659:non_trivial:Applying force field to biomolecule states.
+2022-02-22 23:09:13,013 WARNING:biomolecule.py:727:apply_force_field:Residue RG B 15 has non-integer charge: -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001. 
+2022-02-22 23:09:13,015 WARNING:biomolecule.py:727:apply_force_field:Residue RC B 81 has non-integer charge: -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001. 
+2022-02-22 23:09:13,015 WARNING:main.py:693:non_trivial:Residue RG B 15 has non-integer charge:  -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001
+2022-02-22 23:09:13,015 WARNING:main.py:693:non_trivial:Residue RC B 81 has non-integer charge:  -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001
+2022-02-22 23:09:13,015 INFO:main.py:706:non_trivial:Regenerating headers.
+2022-02-22 23:09:13,016 INFO:main.py:731:non_trivial:Regenerating PDB lines.
+2022-02-22 23:09:13,028 WARNING:main.py:312:print_pqr:Ignoring 392 header lines in output.
+2022-02-23 22:12:16,531 INFO:main.py:240:print_splash_screen:PDB2PQR v3.5.2: biomolecular structure conversion software.
+2022-02-23 22:12:16,532 INFO:main.py:242:print_splash_screen:Please cite:  Jurrus E, et al.  Improvements to the APBS biomolecular solvation software suite.  Protein Sci 27 112-128 (2018).
+2022-02-23 22:12:16,532 INFO:main.py:242:print_splash_screen:Please cite:  Dolinsky TJ, et al.  PDB2PQR: expanding and upgrading automated preparation of biomolecular structures for molecular simulations. Nucleic Acids Res 35 W522-W525 (2007).
+2022-02-23 22:12:16,532 INFO:main.py:752:main_driver:Checking and transforming input arguments.
+2022-02-23 22:12:16,533 INFO:main.py:756:main_driver:Loading topology files.
+2022-02-23 22:12:16,585 INFO:main.py:758:main_driver:Loading molecule: /home/etienne-reboul/Canada_internship/OptiMol-master/docking/data_docking/RNA_only_6UC9.pdb
+2022-02-23 22:12:16,592 INFO:main.py:763:main_driver:Setting up molecule.
+2022-02-23 22:12:16,606 INFO:main.py:409:setup_molecule:Created biomolecule object with 67 residues and 1422 atoms.
+2022-02-23 22:12:16,606 INFO:main.py:767:main_driver:Setting termini states for biomolecule chains.
+2022-02-23 22:12:16,608 INFO:main.py:603:non_trivial:Loading forcefield.
+2022-02-23 22:12:16,615 INFO:main.py:607:non_trivial:Loading hydrogen topology definitions.
+2022-02-23 22:12:16,617 INFO:main.py:459:is_repairable:This biomolecule is clean.  No repair needed.
+2022-02-23 22:12:16,617 INFO:main.py:622:non_trivial:Updating disulfide bridges.
+2022-02-23 22:12:16,617 INFO:main.py:625:non_trivial:Debumping biomolecule.
+2022-02-23 22:12:16,621 INFO:main.py:642:non_trivial:Adding hydrogens to biomolecule.
+2022-02-23 22:12:16,621 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-23 22:12:16,622 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-23 22:12:16,622 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-23 22:12:16,622 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-23 22:12:16,622 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-23 22:12:16,622 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-23 22:12:16,623 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-23 22:12:16,623 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-23 22:12:16,623 WARNING:biomolecule.py:374:add_hydrogens:Tetrahedral hydrogen reconstruction not available for nucleic acids. Some hydrogens may be missing (if so, this is a bug).
+2022-02-23 22:12:16,623 WARNING:io.py:41:filter:Suppressing further "Tetrahedral hydrogen reconstruction" messages
+2022-02-23 22:12:16,747 INFO:main.py:645:non_trivial:Debumping biomolecule (again).
+2022-02-23 22:12:16,753 INFO:main.py:647:non_trivial:Optimizing hydrogen bonds
+2022-02-23 22:12:16,758 INFO:main.py:659:non_trivial:Applying force field to biomolecule states.
+2022-02-23 22:12:16,758 WARNING:biomolecule.py:727:apply_force_field:Residue RG B 15 has non-integer charge: -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001. 
+2022-02-23 22:12:16,760 WARNING:biomolecule.py:727:apply_force_field:Residue RC B 81 has non-integer charge: -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001. 
+2022-02-23 22:12:16,760 WARNING:main.py:693:non_trivial:Residue RG B 15 has non-integer charge:  -0.3081 deviates by 0.3081 from integral, exceeding error tolerance 0.001
+2022-02-23 22:12:16,760 WARNING:main.py:693:non_trivial:Residue RC B 81 has non-integer charge:  -0.6919 deviates by 0.30810000000000004 from integral, exceeding error tolerance 0.001
+2022-02-23 22:12:16,761 INFO:main.py:706:non_trivial:Regenerating headers.
+2022-02-23 22:12:16,761 INFO:main.py:731:non_trivial:Regenerating PDB lines.
+2022-02-23 22:12:16,774 WARNING:main.py:312:print_pqr:Ignoring 392 header lines in output.

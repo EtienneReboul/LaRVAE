@@ -1,0 +1,65 @@
+
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+*
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+*
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+*
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+*******
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+*****************************************************************************************************
+Refine time 40.8511
+Loop time 41.9067
+*working in directory:/project/6005112/retienne/TransVAE
+docking ligand_0 on drd3
+score average for ligand_0 is -3.61 kJ/mol
+successfully removed dir: /project/6005112/retienne/TransVAE/docking/tmp/process_127/ligand_0/
+sucessfully saved docking resulsts of process n°127 to /project/6005112/retienne/TransVAE/cbas/../docking/docking_results/CbAS_vae/127.csv 
+could not find dir: /project/6005112/retienne/TransVAE/docking/tmp/output_127
+It took 42.66s to dock 1 molecule(s) with 1 core(s) 
+********************************************
+Refine time 70.0911
+Loop time 71.5011
+working in directory:/project/6005112/retienne/TransVAE
+docking ligand_0 on drd3
+score average for ligand_0 is -4.88 kJ/mol
+successfully removed dir: /project/6005112/retienne/TransVAE/docking/tmp/process_128/ligand_0/
+sucessfully saved docking resulsts of process n°128 to /project/6005112/retienne/TransVAE/cbas/../docking/docking_results/CbAS_vae/128.csv 
+could not find dir: /project/6005112/retienne/TransVAE/docking/tmp/output_128
+It took 72.51s to dock 1 molecule(s) with 1 core(s) 
+**************************************************
+Refine time 136.146
+Loop time 137.761
+*working in directory:/project/6005112/retienne/TransVAE
+docking ligand_0 on drd3
+score average for ligand_0 is -5.48 kJ/mol
+successfully removed dir: /project/6005112/retienne/TransVAE/docking/tmp/process_86/ligand_0/
+sucessfully saved docking resulsts of process n°86 to /project/6005112/retienne/TransVAE/cbas/../docking/docking_results/CbAS_vae/86.csv 
+could not find dir: /project/6005112/retienne/TransVAE/docking/tmp/output_86
+It took 139.79s to dock 1 molecule(s) with 1 core(s) 
+**********************************
+Refine time 221.518
+Loop time 223.284
+working in directory:/project/6005112/retienne/TransVAE
+docking ligand_0 on drd3
+score average for ligand_0 is -6.24 kJ/mol
+successfully removed dir: /project/6005112/retienne/TransVAE/docking/tmp/process_552/ligand_0/
+sucessfully saved docking resulsts of process n°552 to /project/6005112/retienne/TransVAE/cbas/../docking/docking_results/CbAS_vae/552.csv 
+could not find dir: /project/6005112/retienne/TransVAE/docking/tmp/output_552
+It took 224.13s to dock 1 molecule(s) with 1 core(s) 
+**************
+Refine time 305.054
+Loop time 306.317
+working in directory:/project/6005112/retienne/TransVAE
+docking ligand_0 on drd3
+score average for ligand_0 is -7.42 kJ/mol
+successfully removed dir: /project/6005112/retienne/TransVAE/docking/tmp/process_129/ligand_0/
+sucessfully saved docking resulsts of process n°129 to /project/6005112/retienne/TransVAE/cbas/../docking/docking_results/CbAS_vae/129.csv 
+could not find dir: /project/6005112/retienne/TransVAE/docking/tmp/output_129
+It took 307.07s to dock 1 molecule(s) with 1 core(s) 
