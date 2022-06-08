@@ -4,7 +4,7 @@ Your first time using LaRVAE do the following:
 
 1) Log into compute canada cluster  
 
-2) Download the correct modules with the command  
+2) Load the correct modules with the command  
   $ module load gcc rdkit/2021.09.3 openbabel/3.1.1 python/3.8  
 
 3) Save the modules in a collection  
