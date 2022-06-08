@@ -42,6 +42,7 @@ Subsequent times using LaRVAE do the following:
 ii) Download Data  
   1) Download smile data from moses  
     $ python3 scripts1/download_moses.py  
+    
   2) Covert smile data into seflie data  
     $ python3 scripts1/get_selfies.py  
 
