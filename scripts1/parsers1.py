@@ -150,6 +150,7 @@ def slurm_master_parser():
     parser.add_argument('--model', choices=['transvae', 'rnnattn', 'rnn'], default='rnnattn', type=str)
     parser.add_argument('--main_cores', type=int, default=10) # Number of cores that should be used for  Sampler and Docker
     parser.add_argument('--oracle', type=str, choices=['smina','RLDOCK'],default='smina')  # 'qed' or 'docking' or 'qsar'
+    parser.add_argument('--cur_iter', type=int, default=0) #current iteration
 
     ### SAMPLER
     parser.add_argument('--n_samples', type=int, default=30000)  # Nbr of samples at each iter

@@ -12,7 +12,7 @@ from transvae.trans_models import TransVAE
 from transvae.rnn_models import RNN, RNNAttn
 
 from transvae.data import vae_data_gen, make_std_mask
-from scripts.parsers import attn_parser
+from scripts1.parsers1 import attn_parser
 
 def calc_attention(args):
     ### Load model

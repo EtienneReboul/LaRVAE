@@ -7,6 +7,6 @@
 #SBATCH --mem=256M
 #SBATCH --cpus-per-task=1
 #SBATCH --array=0-2999
-module purge 
-module restore whole_canonical_modules
+#module purge 
+#module restore whole_canonical_modules
 python cbas/docker.py $SLURM_ARRAY_TASK_ID 30000 --cores 1 --server cedar

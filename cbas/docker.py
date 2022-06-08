@@ -17,7 +17,7 @@ if __name__ == '__main__':
 print(f'working in directory:{os.getcwd()}')
 
 from docking.docking import SMINA_dock, set_path, ligand_prep,conformers_prep,RLDOCK_dock,rmdir_dock,target_prep
-from scripts.parsers import docker_parser
+from scripts1.parsers1 import docker_parser
 
 
 def write_results_to_csv(name,unique_id,scores_list,selfies_list):

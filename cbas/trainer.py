@@ -14,7 +14,7 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 if __name__ == '__main__':
     sys.path.append(os.path.join(script_dir, '..'))
 
-from scripts.parsers import cbas_trainer_parser,model_init
+from scripts1.parsers1 import cbas_trainer_parser,model_init
 
 
 def gather_scores(iteration, name):
@@ -113,7 +113,7 @@ def model_init_argument_prepare(name,iteration):
     parser.add_argument('--lr_scale', default=1, type=float)
     parser.add_argument('--warmup_steps', default=0, type=int) # Differs from original default 
     parser.add_argument('--eps_scale', default=1, type=float)
-    parser.add_argument('--epochs', default=5, type=int) # Differs from original default 
+    parser.add_argument('--epochs', default=25, type=int) # Differs from original default #default 5 --> 25 by Zoe
 
     ### Save Parameters
     parser.add_argument('--save_name', default="CbAS_VAE", type=str)# initialized but will be updated

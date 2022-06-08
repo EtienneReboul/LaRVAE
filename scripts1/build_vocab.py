@@ -10,7 +10,7 @@ if __name__ == '__main__':
     sys.path.append(os.path.join(script_dir, '..'))
 
 from transvae.tvae_util import *
-from scripts.parsers import vocab_parser
+from scripts1.parsers1 import vocab_parser
 
 def build_vocab(args):
     ### Build vocab dictionary

@@ -27,14 +27,14 @@ class RNASelect(PDB.Select):
 
 
 def set_path(computer):
-    if computer == 'etienne-reboul':
-        RLDOCK = '/home/etienne-reboul/Canada_internship/RLDOCK-master/RLDOCK'
-        OBABEL='/home/etienne-reboul/anaconda3/bin/obabel'
-        SMINA='/home/etienne-reboul/smina.static'
+    if computer == 'zoewefers':
+        RLDOCK = '/Users/zoewefers/Desktop/RLDOCK'
+        OBABEL='/Users/zoewefers/anaconda3/bin/obabel'
+        SMINA='/Users/zoewefers/Desktop/smina.static'
     elif computer=='cedar':
-        RLDOCK = '/home/retienne/projects/def-jeromew/retienne/RLDOCK/RLDOCK'
+        RLDOCK = '/home/zwefers/projects/def-jeromew/zwefers/SelfiesToFingerprints/tools/RLDOCK'
         OBABEL='obabel'
-        SMINA='/home/retienne/projects/def-jeromew/retienne/smina.static'        
+        SMINA='/home/zwefers/projects/def-jeromew/zwefers/SelfiesToFingerprints/tools/smina.static'        
     return OBABEL,SMINA,RLDOCK
 
 
@@ -137,7 +137,7 @@ def SMINA_dock(ligand=str(),  target='drd3', smina="smina", exhaustiveness=16,sc
         print(f"docking {ligand_name} on {target}")
         cmd = f'{smina} --receptor {receptor_file_path} --ligand {ligand}' \
                 f' --out {output_path} --config {config_file_path} --exhaustiveness {exhaustiveness} --scoring {score_function} --cpu 1 --quiet'
-        subprocess.run(cmd.split(), timeout=1200)
+        subprocess.run(cmd.split(), timeout=480)
 
         ### retrive docking scores and compute mean 
         with open(output_path, 'r') as f:
@@ -149,6 +149,7 @@ def SMINA_dock(ligand=str(),  target='drd3', smina="smina", exhaustiveness=16,sc
             score = np.mean(score)
             print(f'score average for {ligand_name} is {score:.2f} kJ/mol')
     except:
+        print("Unsuccessful docking. Assigning docking score of 0.")
         score = 0
 
     output_dir=ligand.replace(ligand.split("/")[-1],"")

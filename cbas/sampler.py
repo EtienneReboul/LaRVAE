@@ -3,6 +3,7 @@ import time
 import numpy as np
 import pandas as pd
 import sys
+import json #added by zoe
 script_dir = os.path.dirname(os.path.realpath(__file__))
 if __name__ == '__main__':
     sys.path.append(os.path.join(script_dir, '..'))
@@ -10,7 +11,7 @@ if __name__ == '__main__':
 from transvae.trans_models import TransVAE
 from transvae.rnn_models import RNN, RNNAttn
 from transvae.tvae_util import calc_entropy
-from scripts.parsers import sample_parser
+from scripts1.parsers1 import sample_parser
 
 from rdkit import Chem
 from rdkit.Chem import RDConfig

@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
 from transvae.trans_models import TransVAE
 from transvae.rnn_models import RNN, RNNAttn
-from scripts.parsers import model_init, train_parser
+from scripts1.parsers1 import model_init, train_parser
 
 def train(args):
     ### Update beta init parameter

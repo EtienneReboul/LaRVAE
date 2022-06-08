@@ -15,10 +15,8 @@ if __name__ == '__main__':
     sys.path.append(os.path.join(script_dir, '..'))
 
 print(f'working in directory:{os.getcwd()}')
-
-from scripts.parsers import slurm_master_parser 
+from scripts1.parsers1 import slurm_master_parser
 import subprocess
-
 
 def write_sbatch_script_launcher(args):
     """ Writes slurm sh scripts for CEDAR that will be called to launch slurm processes """
@@ -28,20 +26,19 @@ def write_sbatch_script_launcher(args):
         file.write('#SBATCH --account=def-jeromew\n')
         file.write('#SBATCH --time=00:45:00\n')
         file.write('#SBATCH --job-name=sampler\n') 
-        file.write('#SBATCH --output=/home/retienne/projects/def-jeromew/retienne/TransVAE/cbas/logs/sampler_%A.out\n')
-        file.write('#SBATCH --error=/home/retienne/projects/def-jeromew/retienne/TransVAE/cbas/logs/sampler_%A.err\n')
-        file.write('#SBATCH --cpus-per-task=12')
+        file.write('#SBATCH --output=/home/zwefers/projects/def-jeromew/zwefers/SelfiesToFingerprints/LaRVAE/cbas/logs/sampler_%A.out\n')
+        file.write('#SBATCH --error=/home/zwefers/projects/def-jeromew/zwefers/SelfiesToFingerprints/LaRVAE/cbas/logs/sampler_%A.err\n')
+        file.write('#SBATCH --cpus-per-task=12\n')
         file.write('#SBATCH --gres=gpu:1\n') # gpu request
         file.write('#SBATCH --mem=8000M\n')  # memory (per node))
         file.write('python cbas/sampler.py  --model $1 --model_ckpt $2 --sample_mode $3 --name $4 --n_samples $5 --cores $6 --iteration $7 \n')
-        
     # Docker
     with open(os.path.join(script_dir, 'slurm_docker.sh'), 'w') as file :
         file.write('#!/bin/sh\n')
         file.write('#SBATCH --account=def-jeromew\n')
         file.write('#SBATCH --job-name=docker\n') 
-        file.write('#SBATCH --output=/home/retienne/projects/def-jeromew/retienne/TransVAE/cbas/logs/docker_%A.out\n')
-        file.write('#SBATCH --error=/home/retienne/projects/def-jeromew/retienne/TransVAE/cbas/logs/docker_%A.err\n')
+        file.write('#SBATCH --output=/home/zwefers/projects/def-jeromew/zwefers/SelfiesToFingerprints/LaRVAE/cbas/logs/docker_%A.out\n')
+        file.write('#SBATCH --error=/home/zwefers/projects/def-jeromew/zwefers/SelfiesToFingerprints/LaRVAE/cbas/logs/docker_%A.err\n')
         
         if args.oracle=="RLDOCK":
             file.write('#SBATCH --mem=10000M\n')# should ask for  10 GB of memory
@@ -50,9 +47,9 @@ def write_sbatch_script_launcher(args):
             file.write('#SBATCH --array=0-999\n')
             file.write('python cbas/docker.py $SLURM_ARRAY_TASK_ID 1000 --server $1 --exhaustiveness $2 --name $3 --cores $4 --oracle $5 --target $6')
         else:
-            file.write('#SBATCH --mem=256M\n')# should ask for  256 MB of memory
+            file.write('#SBATCH --mem=512M\n')# should ask for  256 MB of memory
             file.write('#SBATCH --cpus-per-task=2\n')
-            file.write('#SBATCH --time=00:10:00\n')
+            file.write('#SBATCH --time=00:15:00\n')
             file.write('#SBATCH --array=0-2999\n')
             file.write('python cbas/docker.py $SLURM_ARRAY_TASK_ID 30000 --server $1 --exhaustiveness $2 --name $3 --cores $4 --oracle $5 --target $6')
         
@@ -64,8 +61,8 @@ def write_sbatch_script_launcher(args):
         file.write('#SBATCH --account=def-jeromew\n')
         file.write('#SBATCH --time=00:40:00\n')
         file.write('#SBATCH --job-name=trainer\n') 
-        file.write('#SBATCH --output=/home/retienne/projects/def-jeromew/retienne/TransVAE/cbas/logs/trainer_%A.out\n')
-        file.write('#SBATCH --error=/home/retienne/projects/def-jeromew/retienne/TransVAE/cbas/logs/trainer_%A.err\n')
+        file.write('#SBATCH --output=/home/zwefers/projects/def-jeromew/zwefers/SelfiesToFingerprints/LaRVAE/cbas/logs/trainer_%A.out\n')
+        file.write('#SBATCH --error=/home/zwefers/projects/def-jeromew/zwefers/SelfiesToFingerprints/LaRVAE/cbas/logs/trainer_%A.err\n')
         file.write('#SBATCH --cpus-per-task=12')
         file.write('#SBATCH --gres=gpu:1\n') # gpu request
         file.write('#SBATCH --mem=8000M\n')  # memory (per node))
@@ -91,7 +88,9 @@ def launch_job(script_name="scripts",previous_job_ID=None,args_list=[],):
 
     ### launch job and retrieve job_ib
     cmd_output=subprocess.run(cmd.split(), stdout=subprocess.PIPE).stdout.decode('utf-8')
+    print("command output: " + str(cmd_output.split()))
     job_ID=cmd_output.split()[3]
+
 
     return job_ID
 
@@ -115,7 +114,7 @@ if __name__ == '__main__':
     ### variable to be initialised before loop
     job_ID = None
 
-    for iteration in range(args.iters):
+    for iteration in range(args.cur_iter, args.cur_iter + args.iters+1):
 
         ### SAMPLING
         sampler_args=[args.model,args.prior_path,args.sample_mode,args.name,args.n_samples,args.main_cores,iteration] 

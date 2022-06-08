@@ -25,7 +25,6 @@ rdBase.DisableLog('rdApp.*')
 
 
 ######## MODEL HELPERS ##########
-
 def clones(module, N):
     """Produce N identical layers (adapted from
     http://nlp.seas.harvard.edu/2018/04/03/attention.html)"""
