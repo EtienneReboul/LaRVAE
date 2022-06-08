@@ -30,7 +30,7 @@ Subsequent times using LaRVAE do the following:
 1) Restore the module collection  
   $ module restore larvaeModules  
 
-2) Activite the virtual environment  
+2) Activate the virtual environment  
   $ source /pathToNewEnv/EnvName/bin/active  
 
 3) Once you are done running LaRVAE deactivate the virtual environment with the command  
