@@ -15,6 +15,8 @@ from transvae.rnn_models import RNN, RNNAttn
 from scripts1.parsers1 import model_init, train_parser
 
 def train(args):
+    print("Entered train.py")
+
     ### Update beta init parameter
     if args.checkpoint is not None:
         ckpt = torch.load(args.checkpoint, map_location=torch.device('cpu'))
@@ -84,7 +86,7 @@ def train(args):
     if args.checkpoint is not None:
         vae.load(args.checkpoint)
     vae.train(train_mols, test_mols, train_props, test_props,
-              epochs=args.epochs, save_freq=args.save_freq)
+              epochs=args.epochs, save_freq=args.save_freq) #end_beta_scale=args.end_beta_scale
 
 
 if __name__ == '__main__':

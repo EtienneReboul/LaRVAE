@@ -11,14 +11,14 @@ def vae_loss(x, x_out, mu, logvar, true_prop, pred_prop, weights, beta=1):
     x = x.contiguous().view(-1)
     x_out = x_out.contiguous().view(-1, x_out.size(2))
     BCE = F.cross_entropy(x_out, x, reduction='mean', weight=weights)
-    KLD = beta * -0.5 * torch.mean(1 + logvar - mu.pow(2) - logvar.exp())
+    KLD = -0.5 * torch.mean(1 + logvar - mu.pow(2) - logvar.exp()) #detleted Beta coeff - Zoe
     if pred_prop is not None:
         MSE = F.mse_loss(pred_prop.squeeze(-1), true_prop)
     else:
         MSE = torch.tensor(0.)
     if torch.isnan(KLD):
         KLD = torch.tensor(0.)
-    return BCE + KLD + MSE, BCE, KLD, MSE
+    return BCE + beta * KLD + MSE, BCE, KLD, beta*KLD, MSE #changed output -Zoe
 
 def trans_vae_loss(x, x_out, mu, logvar, true_len, pred_len, true_prop, pred_prop, weights, beta=1):
     "Binary Cross Entropy Loss + Kiebler-Lublach Divergence + Mask Length Prediction"

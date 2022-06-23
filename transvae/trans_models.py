@@ -128,7 +128,11 @@ class VAEShell():
         self.optimizer.load_state_dict(self.current_state['optimizer_state_dict'])
 
     def train(self, train_mols, val_mols, train_props=None, val_props=None,
-              epochs=100, save=True, save_freq=None, log=True, log_dir='trials'):
+              epochs=100, save=True, save_freq=None, log=True, log_dir='trials'): #, end_beta_scale=20
+        
+        with open("logs/betaTestFile.txt", "w") as f:
+            f.write("end_beta_scale is 20")
+            f.close()
         """
         Train model and validate
 
@@ -150,6 +154,7 @@ class VAEShell():
         ### Prepare data iterators
         train_data = self.data_gen(train_mols, train_props, char_dict=self.params['CHAR_DICT'])
         val_data = self.data_gen(val_mols, val_props, char_dict=self.params['CHAR_DICT'])
+        #Zoe here get adjacency matrices as well as selfies
 
         train_iter = torch.utils.data.DataLoader(train_data,
                                                  batch_size=self.params['BATCH_SIZE'],
@@ -182,17 +187,19 @@ class VAEShell():
             except FileNotFoundError:
                 already_wrote = False
             log_file = open(log_fn, 'a')
+            log_file.write("zoe test here\n")
             if not already_wrote:
-                log_file.write('epoch,batch_idx,data_type,tot_loss,recon_loss,pred_loss,kld_loss,prop_mse_loss,run_time\n')
+                log_file.write('epoch,batch_idx,data_type,tot_loss,recon_loss,pred_loss,kld_loss,beta_kld,prop_mse_loss,run_time\n')
             log_file.close()
         tensorboard_dir=log_fn[:-4]
         os.makedirs(tensorboard_dir,exist_ok=True)
         writer = SummaryWriter(tensorboard_dir)
 
         ### Initialize Annealer
-        kl_annealer = KLAnnealer(self.params['BETA_INIT'], self.params['BETA'],
-                                 epochs, self.params['ANNEAL_START'])
+        kl_annealer = KLAnnealer(self.params['BETA_INIT'], self.params['BETA'], 
+                                    10, self.params['ANNEAL_START']) #set 20 epochs limit to scaling beta
 
+        print("stop increasing beta at 10 epochs")
         ### Epoch loop
         for epoch in range(epochs):
             ### Train Loop
@@ -204,6 +211,7 @@ class VAEShell():
                 avg_bce_losses = []
                 avg_bcemask_losses = []
                 avg_kld_losses = []
+                avg_beta_kld_losses = []
                 avg_prop_mse_losses = []
                 start_run_time = perf_counter()
                 for i in range(self.params['BATCH_CHUNKS']):
@@ -232,13 +240,14 @@ class VAEShell():
                         avg_bcemask_losses.append(bce_mask.item())
                     else:
                         x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask)
-                        loss, bce, kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
+                        loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
                                                                   true_prop, pred_prop,
                                                                   self.params['CHAR_WEIGHTS'],
                                                                   beta)
                     avg_losses.append(loss.item())
                     avg_bce_losses.append(bce.item())
                     avg_kld_losses.append(kld.item())
+                    avg_beta_kld_losses.append(beta_kld.item())
                     avg_prop_mse_losses.append(prop_mse.item())
                     loss.backward()
                 self.optimizer.step()
@@ -252,17 +261,19 @@ class VAEShell():
                 else:
                     avg_bcemask = np.mean(avg_bcemask_losses)
                 avg_kld = np.mean(avg_kld_losses)
+                avg_beta_kld = np.mean(avg_beta_kld_losses)
                 avg_prop_mse = np.mean(avg_prop_mse_losses)
                 losses.append(avg_loss)
 
                 if log:
                     log_file = open(log_fn, 'a')
-                    log_file.write('{},{},{},{},{},{},{},{},{}\n'.format(self.n_epochs,
+                    log_file.write('{},{},{},{},{},{},{},{},{},{}\n'.format(self.n_epochs,
                                                                          j, 'train',
                                                                          avg_loss,
                                                                          avg_bce,
                                                                          avg_bcemask,
                                                                          avg_kld,
+                                                                         avg_beta_kld,
                                                                          avg_prop_mse,
                                                                          run_time))
                     log_file.close()
@@ -276,6 +287,7 @@ class VAEShell():
                 avg_bce_losses = []
                 avg_bcemask_losses = []
                 avg_kld_losses = []
+                avg_beta_kld_losses = []
                 avg_prop_mse_losses = []
                 start_run_time = perf_counter()
                 for i in range(self.params['BATCH_CHUNKS']):
@@ -304,13 +316,14 @@ class VAEShell():
                         avg_bcemask_losses.append(bce_mask.item())
                     else:
                         x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask)
-                        loss, bce, kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
+                        loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
                                                                   true_prop, pred_prop,
                                                                   self.params['CHAR_WEIGHTS'],
                                                                   beta)
                     avg_losses.append(loss.item())
                     avg_bce_losses.append(bce.item())
                     avg_kld_losses.append(kld.item())
+                    avg_beta_kld_losses.append(kld.item())
                     avg_prop_mse_losses.append(prop_mse.item())
                 stop_run_time = perf_counter()
                 run_time = round(stop_run_time - start_run_time, 5)
@@ -321,17 +334,19 @@ class VAEShell():
                 else:
                     avg_bcemask = np.mean(avg_bcemask_losses)
                 avg_kld = np.mean(avg_kld_losses)
+                avg_beta_kld = np.mean(avg_beta_kld_losses)
                 avg_prop_mse = np.mean(avg_prop_mse_losses)
                 losses.append(avg_loss)
 
                 if log:
                     log_file = open(log_fn, 'a')
-                    log_file.write('{},{},{},{},{},{},{},{}\n'.format(self.n_epochs,
+                    log_file.write('{},{},{},{},{},{},{},{},{}\n'.format(self.n_epochs,
                                                                 j, 'test',
                                                                 avg_loss,
                                                                 avg_bce,
                                                                 avg_bcemask,
                                                                 avg_kld,
+                                                                avg_beta_kld,
                                                                 avg_prop_mse,
                                                                 run_time))
                     log_file.close()
@@ -724,7 +739,7 @@ class EncoderDecoder(nn.Module):
         self.generator = generator
         self.property_predictor = property_predictor
 
-    def forward(self, src, tgt, src_mask, tgt_mask):
+    def forward(self, src, tgt, src_mask, tgt_mask): #add adjMatrix input
         "Take in and process masked src and tgt sequences"
         mem, mu, logvar, pred_len = self.encode(src, src_mask)
         x = self.decode(mem, src_mask, tgt, tgt_mask)
