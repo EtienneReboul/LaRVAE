@@ -1,25 +1,34 @@
+import time
+
 import os
 import pickle
-import pkg_resources
+#import pkg_resources
 import sys
 import numpy as np
 import pandas as pd
+from torchsummary import summary
 
-import torch
+
+from torch import load, device
 script_dir = os.path.dirname(os.path.realpath(__file__))
 if __name__ == '__main__':
     sys.path.append(os.path.join(script_dir, '..'))
 
-from transvae.trans_models import TransVAE
-from transvae.rnn_models import RNN, RNNAttn
-from scripts1.parsers1 import model_init, train_parser
+#from transvae.trans_models import TransVAE
+#from transvae.rnn_models import RNN, RNNAttn
+start_time = time.time()
+from scripts1.parsers1 import model_init
+print("model init: " + str(time.time() - start_time))
+start_time = time.time()
+from scripts1.parsers1 import train_parser
+print("parsers: " + str(time.time() - start_time))
 
 def train(args):
-    print("Entered train.py")
+    print("Entered train.py: " + str(time.time() - start_time))
 
     ### Update beta init parameter
     if args.checkpoint is not None:
-        ckpt = torch.load(args.checkpoint, map_location=torch.device('cpu'))
+        ckpt = load(args.checkpoint, map_location=device('cpu'))
         start_epoch = ckpt['epoch']
         total_epochs = start_epoch + args.epochs
         beta_init = (args.beta - args.beta_init) / total_epochs * start_epoch
@@ -34,14 +43,18 @@ def train(args):
               'BETA_INIT': args.beta_init,
               'EPS_SCALE': args.eps_scale,
               'LR_SCALE': args.lr_scale,
-              'WARMUP_STEPS': args.warmup_steps}
+              'WARMUP_STEPS': args.warmup_steps,
+              'ADJ_MAT': args.adj_matrix,
+              'ADJ_WEIGHT': args.adj_weight}
 
     ### Load data, vocab and token weights
     if args.data_source == 'custom':
         assert args.train_mols_path is not None and args.test_mols_path is not None and args.vocab_path is not None,\
         "ERROR: Must specify files for train/test data and vocabulary"
+        print("start load data: " + str(time.time() - start_time))
         train_mols = pd.read_csv(args.train_mols_path).to_numpy()
         test_mols = pd.read_csv(args.test_mols_path).to_numpy()
+        print("end load data: " + str(time.time() - start_time))
         if args.property_predictor:
             assert args.train_props_path is not None and args.test_props_path is not None, \
             "ERROR: Must specify files with train/test properties if training a property predictor"
@@ -83,8 +96,12 @@ def train(args):
 
     ### Train model
     vae = model_init(args, params)
+    #print(vae)
+    #summary(vae, (1, 61, 26))
     if args.checkpoint is not None:
         vae.load(args.checkpoint)
+    #model = vae()
+    #summary(model, (1, 61, 128))
     vae.train(train_mols, test_mols, train_props, test_props,
               epochs=args.epochs, save_freq=args.save_freq) #end_beta_scale=args.end_beta_scale
 

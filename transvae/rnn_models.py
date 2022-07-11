@@ -8,6 +8,7 @@ import torch.nn.functional as F
 import math, copy, time
 from torch.autograd import Variable
 
+
 from transvae.tvae_util import *
 from transvae.opt import NoamOpt, AdamOpt
 from transvae.trans_models import VAEShell, Generator, ConvBottleneck, DeconvBottleneck, PropertyPredictor, Embeddings, LayerNorm
@@ -45,7 +46,7 @@ class RNNAttn(VAEShell):
             bypass_bottleneck (bool): If false, model functions as standard autoencoder
         """
 
-        ### Set learning rate for Adam optimizer
+        ### flearning rate for Adam optimizer
         if 'ADAM_LR' not in self.params.keys():
             self.params['ADAM_LR'] = 3e-4
 
@@ -104,6 +105,8 @@ class RNNAttn(VAEShell):
         ### Initiate optimizer
         self.optimizer = AdamOpt([p for p in self.model.parameters() if p.requires_grad],
                                   self.params['ADAM_LR'], optim.Adam)
+
+        
 
 class RNN(VAEShell):
     """
@@ -190,8 +193,10 @@ class RNNEncoderDecoder(nn.Module):
         self.generator = generator
         self.property_predictor = property_predictor
 
-    def forward(self, src, tgt, src_mask=None, tgt_mask=None):
-        mem, mu, logvar = self.encode(src)
+    def forward(self, src, tgt, adjMatrix=None, src_mask=None, tgt_mask=None): 
+        #print("Size of adjMatrix in encoder-decoder")
+        use_adj_matrix = False
+        mem, mu, logvar = self.encode(src, adjMatrix)
         x, h = self.decode(tgt, mem)
         x = self.generator(x)
         if self.property_predictor is not None:
@@ -200,8 +205,10 @@ class RNNEncoderDecoder(nn.Module):
             prop = None
         return x, mu, logvar, prop
 
-    def encode(self, src):
-        return self.encoder(self.src_embed(src))
+    def encode(self, src, adjMatrix):
+        #print("Size of adjMatrix in encode function")
+        #print(list(adjMatrix.size()))
+        return self.encoder(self.src_embed(src), adjMatrix)
 
     def decode(self, tgt, mem):
         return self.decoder(self.src_embed(tgt), mem)
@@ -235,7 +242,9 @@ class RNNAttnEncoder(nn.Module):
         eps = torch.randn_like(std)
         return mu + eps*std
 
-    def forward(self, x, return_attn=False):
+    def forward(self, x, adjMatrix, return_attn=False):
+        #print("Size of adjMatrix in RNNAttnEncoder")
+        #print(list(adjMatrix.size()))
         h = self.initH(x.shape[0])
         x = x.permute(1, 0, 2)
         x_out, h = self.gru(x, h)
@@ -244,13 +253,22 @@ class RNNAttnEncoder(nn.Module):
         mem = self.norm(x_out)
         if not self.bypass_attention:
             attn_weights = F.softmax(self.attn(torch.cat((x, mem), 2)), dim=2)
+            #print("Got Adj Matrix!")
+            #print(list(attn_weights.size()))
+            #print(list(adjMatrix.size()))
+            #print(list(mem.size()))
+            if adjMatrix is not None:
+                print("using adj matrix")
+                attn_weights = torch.matmul(attn_weights, adjMatrix)
             attn_applied = torch.bmm(attn_weights, mem)
             mem = F.relu(attn_applied)
         if self.bypass_bottleneck:
             mu, logvar = Variable(torch.tensor([100.])), Variable(torch.tensor([100.]))
         else:
             mem = mem.permute(0, 2, 1)
+            #print("before bottleneck latent dim: "+ str(list(mem.size())))
             mem = self.conv_bottleneck(mem)
+            #print("after bottleneck latent dim: "+ str(list(mem.size())))
             mem = mem.contiguous().view(mem.size(0), -1)
             mu, logvar = self.z_means(mem), self.z_var(mem)
             mem = self.reparameterize(mu, logvar)

@@ -19,6 +19,8 @@ from transvae.data import vae_data_gen, make_std_mask
 from transvae.loss import vae_loss, trans_vae_loss
 
 
+
+
 ####### MODEL SHELL ##########
 
 class VAEShell():
@@ -56,8 +58,8 @@ class VAEShell():
         self.data_gen = vae_data_gen
 
         ### Sequence length hard-coded into model
-        self.src_len = 126
-        self.tgt_len = 125
+        self.src_len = 126 #Zoe changed from 126 to 60
+        self.tgt_len = 125 #Zoe changed from 125 to 59, don't know why ouput is shorter
 
         ### Build empty structures for data storage
         self.n_epochs = 0
@@ -152,8 +154,9 @@ class VAEShell():
             log_dir (str): Directory to store log files
         """
         ### Prepare data iterators
-        train_data = self.data_gen(train_mols, train_props, char_dict=self.params['CHAR_DICT'])
-        val_data = self.data_gen(val_mols, val_props, char_dict=self.params['CHAR_DICT'])
+        train_data = self.data_gen(train_mols, train_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_WEIGHT'])
+        val_data = self.data_gen(val_mols, val_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_WEIGHT'])
+
         #Zoe here get adjacency matrices as well as selfies
 
         train_iter = torch.utils.data.DataLoader(train_data,
@@ -201,7 +204,9 @@ class VAEShell():
 
         print("stop increasing beta at 10 epochs")
         ### Epoch loop
+        
         for epoch in range(epochs):
+            start_time = time.time()
             ### Train Loop
             self.model.train()
             losses = []
@@ -215,8 +220,12 @@ class VAEShell():
                 avg_prop_mse_losses = []
                 start_run_time = perf_counter()
                 for i in range(self.params['BATCH_CHUNKS']):
+                    input_len = self.src_len+1 #input length including padding and start token
                     batch_data = data[i*self.chunk_size:(i+1)*self.chunk_size,:]
-                    mols_data = batch_data[:,:-1]
+                    mols_data = batch_data[:,:input_len] #changed by zoe
+                    adjMat_data = batch_data[:, input_len:-1] #added by zoe
+                    print("chunk size is " + str(self.chunk_size))
+                    adjMat_data = torch.reshape(adjMat_data, (self.chunk_size, input_len, input_len))
                     props_data = batch_data[:,-1]
                     if self.use_gpu:
                         mols_data = mols_data.cuda()
@@ -239,7 +248,10 @@ class VAEShell():
                                                                             beta)
                         avg_bcemask_losses.append(bce_mask.item())
                     else:
-                        x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask)
+                        if self.params['ADJ_MAT']:
+                             x_out, mu, logvar, pred_prop = self.model(src, tgt, adjMat_data, src_mask, tgt_mask) #Zoe Added AdjMatrix ", adjMat_data"
+                        else:
+                            x_out, mu, logvar, pred_prop = self.model(src, tgt , src_mask, tgt_mask) #Zoe Added AdjMatrix ", adjMat_data"
                         loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
                                                                   true_prop, pred_prop,
                                                                   self.params['CHAR_WEIGHTS'],
@@ -279,6 +291,8 @@ class VAEShell():
                     log_file.close()
             train_loss = np.mean(losses)
 
+            print("train time for one epoch: " + str(time.time() - start_time))
+            start_time = time.time()
             ### Val Loop
             self.model.eval()
             losses = []
@@ -372,6 +386,8 @@ class VAEShell():
                     epoch_str = '0' + epoch_str
                 if save:
                     self.save(self.current_state, epoch_str)
+        
+        print("val time for one epoch: " + str(time.time() - start_time))
 
     ### Sampling and Decoding Functions
     def sample_from_memory(self, size, mode='rand', sample_dims=None, k=5):
@@ -476,7 +492,7 @@ class VAEShell():
                                    token ids
             mems (np.array): Array of model memory vectors
         """
-        data = vae_data_gen(data, props=None, char_dict=self.params['CHAR_DICT'])
+        data = vae_data_gen(data, None, self.params['CHAR_DICT'], self.src_len)
 
         data_iter = torch.utils.data.DataLoader(data,
                                                 batch_size=self.params['BATCH_SIZE'],
@@ -739,7 +755,7 @@ class EncoderDecoder(nn.Module):
         self.generator = generator
         self.property_predictor = property_predictor
 
-    def forward(self, src, tgt, src_mask, tgt_mask): #add adjMatrix input
+    def forward(self, src, tgt, src_mask, tgt_mask, adjMatrix): #add adjMatrix input
         "Take in and process masked src and tgt sequences"
         mem, mu, logvar, pred_len = self.encode(src, src_mask)
         x = self.decode(mem, src_mask, tgt, tgt_mask)
@@ -984,10 +1000,12 @@ class ConvBottleneck(nn.Module):
     def __init__(self, size):
         super().__init__()
         conv_layers = []
+        print("size to init conv neck : " + str(size))
         in_d = size
         first = True
         for i in range(3):
             out_d = int((in_d - 64) // 2 + 64)
+            print("out dimension is " + str(out_d))
             if first:
                 kernel_size = 9
                 first = False
@@ -1000,6 +1018,7 @@ class ConvBottleneck(nn.Module):
         self.conv_layers = ListModule(*conv_layers)
 
     def forward(self, x):
+        print("convolutional input: " + str(list(x.size())))
         for conv in self.conv_layers:
             x = F.relu(conv(x))
         return x
