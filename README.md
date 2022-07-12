@@ -50,8 +50,8 @@ ii) Download Data
 
 iii) Train Initial Model   
   1a) Use tranvae to train an initial vae: 
-    $python scripts1/train.py --model rnnattn --data_source custom --train_mols_path my_train_data.txt --test_mols_path my_test_data.txt --vocab_path my_vocab.pkl --char_weights_path my_char_weights.npy --save_name my_model
-    1b) if you want to train using SELFIE adjacency matrices you can use the option "--adj_matrix True" and you can set the weight for non-edges of the adjacency matrix with the option "--adj_weight " followed by a float in (0,1)
+    $python scripts1/train.py --model rnnattn --data_source custom --train_mols_path my_train_data.txt --test_mols_path my_test_data.txt --vocab_path my_vocab.pkl --char_weights_path my_char_weights.npy --save_name my_model  
+    1b) if you want to train using SELFIE adjacency matrices you can use the option "--adj_matrix True" and you can set the weight for non-edges of the adjacency matrix with the option "--adj_weight " followed by a float in (0,1)  
     
   2) You can use "$ scripts1/train.py --help" to see all command options  
 
