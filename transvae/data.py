@@ -4,11 +4,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math, copy, time
 from torch.autograd import Variable
+import time
 
 from transvae.tvae_util import *
 from adjMatrix import getAdjMatrixFromSelfie #added by Zoe
 
-def vae_data_gen(mols, props, char_dict, padded_len, adj_weight):
+def vae_data_gen(mols, props, char_dict, padded_len, use_adj=False, adj_weight=0.3):
     """
     Encodes input smiles to tensors with token ids
 
@@ -20,7 +21,7 @@ def vae_data_gen(mols, props, char_dict, padded_len, adj_weight):
         encoded_data (torch.tensor): Tensor containing encodings for each
                                      SMILES string
     """
-    
+    #define data dimension
     selfie_encoding_len = padded_len+1 #should be 61 tokens with start token
     flat_adjmatrix_len = selfie_encoding_len**2 #should ebe 61x61
 
@@ -29,14 +30,25 @@ def vae_data_gen(mols, props, char_dict, padded_len, adj_weight):
         props = np.zeros(selfies.shape)
     del mols
     tokenized_selfies = [tokenizer(x) for x in selfies]
-    encoded_data = torch.empty((len(tokenized_selfies), selfie_encoding_len+flat_adjmatrix_len+1)) #selfie, adjmatrix, prop
+
+    #initialize size of data matrix
+    if use_adj:
+        encoded_data = torch.empty((len(tokenized_selfies), selfie_encoding_len+flat_adjmatrix_len+1)) #selfie, adjmatrix, prop
+    else: 
+        encoded_data = torch.empty((len(tokenized_selfies), selfie_encoding_len+1))
+    
+    #fill in data matrix
     for j, tokenized_selfie in enumerate(tokenized_selfies):
         encoded_selfie = encode_smiles(tokenized_selfie, selfie_encoding_len-1, char_dict) #should be length 60
         encoded_selfie = [0] + encoded_selfie #adding start token (length 61)
-        atom_list, adjmatrix = getAdjMatrixFromSelfie(selfies[j], selfie_encoding_len, c=adj_weight)
-        encoded_data[j,:-flat_adjmatrix_len-1] = torch.tensor(encoded_selfie)
-        encoded_data[j,selfie_encoding_len:-1] = torch.tensor(adjmatrix.flatten())
-        encoded_data[j,-1] = torch.tensor(props[j])
+        if use_adj: #if adj_matrix
+            atom_list, adjmatrix = getAdjMatrixFromSelfie(selfies[j], selfie_encoding_len, c=adj_weight)
+            encoded_data[j,:-flat_adjmatrix_len-1] = torch.tensor(encoded_selfie)
+            encoded_data[j,selfie_encoding_len:-1] = torch.tensor(adjmatrix.flatten())
+            encoded_data[j,-1] = torch.tensor(props[j])
+        else:
+            encoded_data[j,:-1] = torch.tensor(encoded_selfie)
+            encoded_data[j,-1] = torch.tensor(props[j])
     return encoded_data
 
 def make_std_mask(tgt, pad):

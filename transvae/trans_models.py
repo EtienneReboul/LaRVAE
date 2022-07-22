@@ -58,8 +58,8 @@ class VAEShell():
         self.data_gen = vae_data_gen
 
         ### Sequence length hard-coded into model
-        self.src_len = 126 #Zoe changed from 126 to 60
-        self.tgt_len = 125 #Zoe changed from 125 to 59, don't know why ouput is shorter
+        self.src_len = 58 #Zoe changed from 126 to 58 (length of input with start token will be 59)
+        self.tgt_len = 57 #Zoe changed from 125 to 57, don't know why ouput is shorter
 
         ### Build empty structures for data storage
         self.n_epochs = 0
@@ -154,10 +154,9 @@ class VAEShell():
             log_dir (str): Directory to store log files
         """
         ### Prepare data iterators
-        train_data = self.data_gen(train_mols, train_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_WEIGHT'])
-        val_data = self.data_gen(val_mols, val_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_WEIGHT'])
+        train_data = self.data_gen(train_mols, train_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
+        val_data = self.data_gen(val_mols, val_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
 
-        #Zoe here get adjacency matrices as well as selfies
 
         train_iter = torch.utils.data.DataLoader(train_data,
                                                  batch_size=self.params['BATCH_SIZE'],
@@ -200,9 +199,9 @@ class VAEShell():
 
         ### Initialize Annealer
         kl_annealer = KLAnnealer(self.params['BETA_INIT'], self.params['BETA'], 
-                                    10, self.params['ANNEAL_START']) #set 20 epochs limit to scaling beta
+                                    epochs, self.params['ANNEAL_START']) #set 20 epochs limit to scaling beta
 
-        print("stop increasing beta at 10 epochs")
+        #print("stop increasing beta at 10 epochs")
         ### Epoch loop
         
         for epoch in range(epochs):
@@ -223,9 +222,11 @@ class VAEShell():
                     input_len = self.src_len+1 #input length including padding and start token
                     batch_data = data[i*self.chunk_size:(i+1)*self.chunk_size,:]
                     mols_data = batch_data[:,:input_len] #changed by zoe
-                    adjMat_data = batch_data[:, input_len:-1] #added by zoe
-                    print("chunk size is " + str(self.chunk_size))
-                    adjMat_data = torch.reshape(adjMat_data, (self.chunk_size, input_len, input_len))
+                    if self.params['ADJ_MAT']:
+                        adjMat_data = batch_data[:, input_len:-1] #added by zoe
+                        adjMat_data = torch.reshape(adjMat_data, (self.chunk_size, input_len, input_len))
+                    else:
+                        adjMat_data = None
                     props_data = batch_data[:,-1]
                     if self.use_gpu:
                         mols_data = mols_data.cuda()
@@ -249,13 +250,19 @@ class VAEShell():
                         avg_bcemask_losses.append(bce_mask.item())
                     else:
                         if self.params['ADJ_MAT']:
-                             x_out, mu, logvar, pred_prop = self.model(src, tgt, adjMat_data, src_mask, tgt_mask) #Zoe Added AdjMatrix ", adjMat_data"
-                        else:
-                            x_out, mu, logvar, pred_prop = self.model(src, tgt , src_mask, tgt_mask) #Zoe Added AdjMatrix ", adjMat_data"
-                        loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
+                            #print("training with non empty adj matrices")
+                            x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask, adjMat_data) #Zoe Added AdjMatrix ", adjMat_data"
+                            loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
                                                                   true_prop, pred_prop,
                                                                   self.params['CHAR_WEIGHTS'],
                                                                   beta)
+                        else:
+                            x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask) #Zoe Added AdjMatrix ", adjMat_data"
+                            loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
+                                                                  true_prop, pred_prop,
+                                                                  self.params['CHAR_WEIGHTS'],
+                                                                  beta)
+
                     avg_losses.append(loss.item())
                     avg_bce_losses.append(bce.item())
                     avg_kld_losses.append(kld.item())
@@ -790,7 +797,7 @@ class VAEEncoder(nn.Module):
         super().__init__()
         self.layers = clones(layer, N)
         self.conv_bottleneck = ConvBottleneck(layer.size)
-        self.z_means, self.z_var = nn.Linear(576, d_latent), nn.Linear(576, d_latent)
+        self.z_means, self.z_var = nn.Linear(320, d_latent), nn.Linear(320, d_latent) #320 used to be 576
         self.norm = LayerNorm(layer.size)
         self.predict_len1 = nn.Linear(d_latent, d_latent*2)
         self.predict_len2 = nn.Linear(d_latent*2, d_latent)
@@ -881,14 +888,14 @@ class VAEDecoder(nn.Module):
         self.tgt_len = decoder_layers.tgt_len
 
         # Reshaping memory with deconvolution
-        self.linear = nn.Linear(d_latent, 576)
+        self.linear = nn.Linear(d_latent, 320) #change 576 to 320
         self.deconv_bottleneck = DeconvBottleneck(decoder_layers.size)
 
     def forward(self, x, mem, src_mask, tgt_mask):
         ### Deconvolutional bottleneck (up-sampling)
         if not self.bypass_bottleneck:
             mem = F.relu(self.linear(mem))
-            mem = mem.view(-1, 64, 9)
+            mem = mem.view(-1, 64, 5) #changed 9 to 5
             mem = self.deconv_bottleneck(mem)
             mem = mem.permute(0, 2, 1)
         ### Final self-attention layer
@@ -905,7 +912,7 @@ class VAEDecoder(nn.Module):
         "Forward pass that saves attention weights"
         if not self.bypass_bottleneck:
             mem = F.relu(self.linear(mem))
-            mem = mem.view(-1, 64, 9)
+            mem = mem.view(-1, 64, 5) #changed 9 to 5
             mem = self.deconv_bottleneck(mem)
             mem = mem.permute(0, 2, 1)
         for final_encode in self.final_encodes:
@@ -1000,17 +1007,18 @@ class ConvBottleneck(nn.Module):
     def __init__(self, size):
         super().__init__()
         conv_layers = []
-        print("size to init conv neck : " + str(size))
         in_d = size
+        
         first = True
         for i in range(3):
             out_d = int((in_d - 64) // 2 + 64)
-            print("out dimension is " + str(out_d))
+            #print("in dimension is " + str(in_d))
+            #print("out dimension is " + str(out_d))
             if first:
-                kernel_size = 9
+                kernel_size = 4 #used to be 9 now 4
                 first = False
             else:
-                kernel_size = 8
+                kernel_size = 3 #used to be 8 now 3
             if i == 2:
                 out_d = 64
             conv_layers.append(nn.Sequential(nn.Conv1d(in_d, out_d, kernel_size), nn.MaxPool1d(2)))
@@ -1018,7 +1026,7 @@ class ConvBottleneck(nn.Module):
         self.conv_layers = ListModule(*conv_layers)
 
     def forward(self, x):
-        print("convolutional input: " + str(list(x.size())))
+        
         for conv in self.conv_layers:
             x = F.relu(conv(x))
         return x
@@ -1035,7 +1043,7 @@ class DeconvBottleneck(nn.Module):
         for i in range(3):
             out_d = (size - in_d) // 4 + in_d
             stride = 4 - i
-            kernel_size = 11
+            kernel_size = 7 #was 11
             if i == 2:
                 out_d = size
                 stride = 1
@@ -1046,7 +1054,9 @@ class DeconvBottleneck(nn.Module):
 
     def forward(self, x):
         for deconv in self.deconv_layers:
+            #print("deconv dimension " + str(list(x.size())))
             x = F.relu(deconv(x))
+        #print("deconv dimension " + str(list(x.size())))
         return x
 
 ############## Property Predictor #################
