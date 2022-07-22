@@ -193,9 +193,8 @@ class RNNEncoderDecoder(nn.Module):
         self.generator = generator
         self.property_predictor = property_predictor
 
-    def forward(self, src, tgt, adjMatrix=None, src_mask=None, tgt_mask=None): 
+    def forward(self, src, tgt, src_mask=None, tgt_mask=None, adjMatrix=None): 
         #print("Size of adjMatrix in encoder-decoder")
-        use_adj_matrix = False
         mem, mu, logvar = self.encode(src, adjMatrix)
         x, h = self.decode(tgt, mem)
         x = self.generator(x)
@@ -232,8 +231,8 @@ class RNNAttnEncoder(nn.Module):
         self.gru = nn.GRU(self.size, self.size, num_layers=N, dropout=dropout)
         self.attn = nn.Linear(self.size * 2, self.max_length)
         self.conv_bottleneck = ConvBottleneck(size)
-        self.z_means = nn.Linear(576, d_latent)
-        self.z_var = nn.Linear(576, d_latent)
+        self.z_means = nn.Linear(320, d_latent) #changed 576 to 320
+        self.z_var = nn.Linear(320, d_latent) #changed 576 to 320
         self.dropout = nn.Dropout(p=dropout)
         self.norm = LayerNorm(size)
 
@@ -253,22 +252,19 @@ class RNNAttnEncoder(nn.Module):
         mem = self.norm(x_out)
         if not self.bypass_attention:
             attn_weights = F.softmax(self.attn(torch.cat((x, mem), 2)), dim=2)
-            #print("Got Adj Matrix!")
-            #print(list(attn_weights.size()))
-            #print(list(adjMatrix.size()))
-            #print(list(mem.size()))
+            copy_weights = torch.clone(attn_weights)
             if adjMatrix is not None:
-                print("using adj matrix")
-                attn_weights = torch.matmul(attn_weights, adjMatrix)
+                #print("using adj matrix")
+                attn_weights = torch.mul(attn_weights, adjMatrix)
+                #print("weights after mult by adj matrix are the same")
+                #print(torch.equal(attn_weights, copy_weights))
             attn_applied = torch.bmm(attn_weights, mem)
             mem = F.relu(attn_applied)
         if self.bypass_bottleneck:
             mu, logvar = Variable(torch.tensor([100.])), Variable(torch.tensor([100.]))
         else:
             mem = mem.permute(0, 2, 1)
-            #print("before bottleneck latent dim: "+ str(list(mem.size())))
             mem = self.conv_bottleneck(mem)
-            #print("after bottleneck latent dim: "+ str(list(mem.size())))
             mem = mem.contiguous().view(mem.size(0), -1)
             mu, logvar = self.z_means(mem), self.z_var(mem)
             mem = self.reparameterize(mu, logvar)
@@ -296,7 +292,7 @@ class RNNAttnDecoder(nn.Module):
         self.bypass_bottleneck = bypass_bottleneck
         self.device = device
 
-        self.linear = nn.Linear(d_latent, 576)
+        self.linear = nn.Linear(d_latent, 320) #changed 576 to 320
         self.deconv_bottleneck = DeconvBottleneck(size)
         self.dropout = nn.Dropout(p=dropout)
         self.gru = nn.GRU(self.gru_size, self.size, num_layers=N, dropout=dropout)
@@ -307,7 +303,7 @@ class RNNAttnDecoder(nn.Module):
         h = self.initH(mem.shape[0])
         if not self.bypass_bottleneck:
             mem = F.relu(self.linear(mem))
-            mem = mem.contiguous().view(-1, 64, 9)
+            mem = mem.contiguous().view(-1, 64, 5) #changed 9 to 5
             mem = self.deconv_bottleneck(mem)
             mem = mem.permute(0, 2, 1)
             mem = self.norm(mem)
