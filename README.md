@@ -23,7 +23,9 @@ Your first time using LaRVAE do the following:
   $ pip install -r /pathToLaRVAE/requirements_3.8.10.txt  
 
 7) To get data run the following scripts
-  $
+  $ python3 scripts1/download_moses.py  
+  $ python3 scripts1/build_vocab.py  
+  
 8) Once you are done running LaRVAE deactivate the virtual environment with the command  
   $ deactivate  
   
@@ -47,8 +49,9 @@ ii) Download Data
     $ python3 scripts1/get_selfies.py  
 
 iii) Train Initial Model   
-  1) Use tranvae to train an initial vae: 
+  1a) Use tranvae to train an initial vae: 
     $python scripts1/train.py --model rnnattn --data_source custom --train_mols_path my_train_data.txt --test_mols_path my_test_data.txt --vocab_path my_vocab.pkl --char_weights_path my_char_weights.npy --save_name my_model  
+    1b) if you want to train using SELFIE adjacency matrices you can use the option "--adj_matrix True" and you can set the weight for non-edges of the adjacency matrix with the option "--adj_weight " followed by a float in (0,1)  
     
   2) You can use "$ scripts1/train.py --help" to see all command options  
 
