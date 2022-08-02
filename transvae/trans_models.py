@@ -17,6 +17,7 @@ from transvae.tvae_util import *
 from transvae.opt import NoamOpt
 from transvae.data import vae_data_gen, make_std_mask
 from transvae.loss import vae_loss, trans_vae_loss
+import dataloader
 
 
 
@@ -154,6 +155,9 @@ class VAEShell():
             log_dir (str): Directory to store log files
         """
         ### Prepare data iterators
+        #train_data = dataloader.VAE_Dataset(train_mols, train_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
+        #val_data = dataloader.VAE_Dataset(val_mols, val_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
+
         train_data = self.data_gen(train_mols, train_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
         val_data = self.data_gen(val_mols, val_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
 
@@ -203,7 +207,7 @@ class VAEShell():
 
         #print("stop increasing beta at 10 epochs")
         ### Epoch loop
-        
+        train_step = 0
         for epoch in range(epochs):
             start_time = time.time()
             ### Train Loop
@@ -211,6 +215,7 @@ class VAEShell():
             losses = []
             beta = kl_annealer(epoch)
             for j, data in enumerate(train_iter):
+                train_step += 1
                 avg_losses = []
                 avg_bce_losses = []
                 avg_bcemask_losses = []
@@ -231,7 +236,7 @@ class VAEShell():
                     if self.use_gpu:
                         mols_data = mols_data.cuda()
                         props_data = props_data.cuda()
-
+                        adjMat_data = adjMat_data.cuda()
 
                     src = Variable(mols_data).long()
                     tgt = Variable(mols_data[:,:-1]).long()
@@ -269,6 +274,9 @@ class VAEShell():
                     avg_beta_kld_losses.append(beta_kld.item())
                     avg_prop_mse_losses.append(prop_mse.item())
                     loss.backward()
+
+
+
                 self.optimizer.step()
                 self.model.zero_grad()
                 stop_run_time = perf_counter()
@@ -312,12 +320,18 @@ class VAEShell():
                 avg_prop_mse_losses = []
                 start_run_time = perf_counter()
                 for i in range(self.params['BATCH_CHUNKS']):
+                    input_len = self.src_len+1 #input length including padding and start token
                     batch_data = data[i*self.chunk_size:(i+1)*self.chunk_size,:]
-                    mols_data = batch_data[:,:-1]
-                    props_data = batch_data[:,-1]
+                    mols_data = batch_data[:,:input_len] #changed by zoe
+                    if self.params['ADJ_MAT']:
+                        adjMat_data = batch_data[:, input_len:-1] #added by zoe
+                        adjMat_data = torch.reshape(adjMat_data, (self.chunk_size, input_len, input_len))
+                    else:
+                        adjMat_data = None
                     if self.use_gpu:
                         mols_data = mols_data.cuda()
                         props_data = props_data.cuda()
+                        adjMat_data = adjMat_data.cuda()
 
                     src = Variable(mols_data).long()
                     tgt = Variable(mols_data[:,:-1]).long()
@@ -336,15 +350,24 @@ class VAEShell():
                                                                             beta)
                         avg_bcemask_losses.append(bce_mask.item())
                     else:
-                        x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask)
-                        loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
+                        if self.params['ADJ_MAT']:
+                            #print("training with non empty adj matrices")
+                            x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask, adjMat_data) #Zoe Added AdjMatrix ", adjMat_data"
+                            loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
                                                                   true_prop, pred_prop,
                                                                   self.params['CHAR_WEIGHTS'],
                                                                   beta)
+                        else:
+                            x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask) #Zoe Added AdjMatrix ", adjMat_data"
+                            loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
+                                                                  true_prop, pred_prop,
+                                                                  self.params['CHAR_WEIGHTS'],
+                                                                  beta)
+                        
                     avg_losses.append(loss.item())
                     avg_bce_losses.append(bce.item())
                     avg_kld_losses.append(kld.item())
-                    avg_beta_kld_losses.append(kld.item())
+                    avg_beta_kld_losses.append(beta_kld.item())
                     avg_prop_mse_losses.append(prop_mse.item())
                 stop_run_time = perf_counter()
                 run_time = round(stop_run_time - start_run_time, 5)
@@ -480,13 +503,13 @@ class VAEShell():
         decoded = tgt[:,1:]
         return decoded
 
-    def reconstruct(self, data, method='greedy', log=True, return_mems=True, return_str=True):
+    def reconstruct(self, mols, method='greedy', log=True, return_mems=True, return_str=True):
         """
         Method for encoding input smiles into memory and decoding back
         into smiles
 
         Arguments:
-            data (np.array, required): Input array consisting of smiles and property
+            mols (np.array, required): Input array consisting of smiles and property
             method (str): Method for decoding. Greedy decoding is currently the only
                           method implemented. May implement beam search, top_p or top_k
                           in future versions.
@@ -499,7 +522,8 @@ class VAEShell():
                                    token ids
             mems (np.array): Array of model memory vectors
         """
-        data = vae_data_gen(data, None, self.params['CHAR_DICT'], self.src_len)
+        data = vae_data_gen(mols, None, self.params['CHAR_DICT'], self.src_len, use_adj=self.params["ADJ_MAT"], adj_weight=self.params["ADJ_WEIGHT"])
+        #data = dataloader.VAE_Dataset(data, None, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
 
         data_iter = torch.utils.data.DataLoader(data,
                                                 batch_size=self.params['BATCH_SIZE'],
@@ -508,21 +532,30 @@ class VAEShell():
         self.batch_size = self.params['BATCH_SIZE']
         self.chunk_size = self.batch_size // self.params['BATCH_CHUNKS']
 
+        input_len = self.src_len+1 #added by Zoe
+
         self.model.eval()
         decoded_smiles = []
         mems = torch.empty((data.shape[0], self.params['d_latent'])).cpu()
         for j, data in enumerate(data_iter):
+            print("Batch " + str(j))
             if log:
                 log_file = open('calcs/{}_progress.txt'.format(self.name), 'a')
                 log_file.write('{}\n'.format(j))
                 log_file.close()
             for i in range(self.params['BATCH_CHUNKS']):
                 batch_data = data[i*self.chunk_size:(i+1)*self.chunk_size,:]
-                mols_data = batch_data[:,:-1]
+                mols_data = batch_data[:,:input_len] #changed by zoe
+                if self.params['ADJ_MAT']:
+                    adjMat_data = batch_data[:, input_len:-1] #added by zoe
+                    adjMat_data = torch.reshape(adjMat_data, (self.chunk_size, input_len, input_len))
+                else:
+                    adjMat_data = None
                 props_data = batch_data[:,-1]
                 if self.use_gpu:
                     mols_data = mols_data.cuda()
                     props_data = props_data.cuda()
+                    adjMat_data = adjMat_data.cuda()
 
                 src = Variable(mols_data).long()
                 src_mask = (src != self.pad_idx).unsqueeze(-2)
@@ -531,7 +564,7 @@ class VAEShell():
                 if self.model_type == 'transformer':
                     _, mem, _, _ = self.model.encode(src, src_mask)
                 else:
-                    _, mem, _ = self.model.encode(src)
+                    _, mem, _ = self.model.encode(src, adjMatrix=adjMat_data)
                 start = j*self.batch_size+i*self.chunk_size
                 stop = j*self.batch_size+(i+1)*self.chunk_size
                 mems[start:stop, :] = mem.detach().cpu()
@@ -547,6 +580,7 @@ class VAEShell():
                     decoded_smiles += decoded
                 else:
                     decoded_smiles.append(decoded)
+
 
         if return_mems:
             return decoded_smiles, mems.detach().numpy()
@@ -605,7 +639,7 @@ class VAEShell():
             logvars(np.array): Log variance array (prior to reparameterization)
         """
         data = vae_data_gen(data, props=None, char_dict=self.params['CHAR_DICT'])
-
+        #data = dataloader.VAE_Dataset(data, None, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
         data_iter = torch.utils.data.DataLoader(data,
                                                 batch_size=self.params['BATCH_SIZE'],
                                                 shuffle=False, num_workers=0,

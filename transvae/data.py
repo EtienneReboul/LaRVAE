@@ -22,8 +22,8 @@ def vae_data_gen(mols, props, char_dict, padded_len, use_adj=False, adj_weight=0
                                      SMILES string
     """
     #define data dimension
-    selfie_encoding_len = padded_len+1 #should be 61 tokens with start token
-    flat_adjmatrix_len = selfie_encoding_len**2 #should ebe 61x61
+    selfie_encoding_len = padded_len+1 #should be 59 tokens with start token
+    flat_adjmatrix_len = selfie_encoding_len**2 #should be 59x59
 
     selfies = mols[:,0]
     if props is None:
@@ -40,7 +40,7 @@ def vae_data_gen(mols, props, char_dict, padded_len, use_adj=False, adj_weight=0
     #fill in data matrix
     for j, tokenized_selfie in enumerate(tokenized_selfies):
         encoded_selfie = encode_smiles(tokenized_selfie, selfie_encoding_len-1, char_dict) #should be length 60
-        encoded_selfie = [0] + encoded_selfie #adding start token (length 61)
+        encoded_selfie = [0] + encoded_selfie #adding start token (length 59)
         if use_adj: #if adj_matrix
             atom_list, adjmatrix = getAdjMatrixFromSelfie(selfies[j], selfie_encoding_len, c=adj_weight)
             encoded_data[j,:-flat_adjmatrix_len-1] = torch.tensor(encoded_selfie)
