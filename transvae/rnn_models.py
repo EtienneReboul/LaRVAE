@@ -252,10 +252,11 @@ class RNNAttnEncoder(nn.Module):
         mem = self.norm(x_out)
         if not self.bypass_attention:
             attn_weights = F.softmax(self.attn(torch.cat((x, mem), 2)), dim=2)
-            copy_weights = torch.clone(attn_weights)
+            #copy_weights = torch.clone(attn_weights)
             if adjMatrix is not None:
-                #print("using adj matrix")
+                torch.set_printoptions(threshold=10_000)
                 attn_weights = torch.mul(attn_weights, adjMatrix)
+                #print(attn_weights)
                 #print("weights after mult by adj matrix are the same")
                 #print(torch.equal(attn_weights, copy_weights))
             attn_applied = torch.bmm(attn_weights, mem)

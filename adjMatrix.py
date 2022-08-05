@@ -78,8 +78,8 @@ def processAtoms(prev_atom_idx, cur_idx, num_tokens_to_process, tokens, adj_matr
 
 
 def processBranch(prev_atom_idx, start_idx, tokens, adj_matrix, atom_list):
-    print("enter branch")
-    print(start_idx)
+    #print("enter branch")
+    #print(start_idx)
 
     branch_token = tokens[start_idx]
 

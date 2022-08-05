@@ -195,7 +195,7 @@ class VAEShell():
             log_file = open(log_fn, 'a')
             log_file.write("zoe test here\n")
             if not already_wrote:
-                log_file.write('epoch,batch_idx,data_type,tot_loss,recon_loss,pred_loss,kld_loss,beta_kld,prop_mse_loss,run_time\n')
+                log_file.write('epoch,batch_idx,data_type,tot_loss,recon_loss,pred_loss,kld_loss,beta_kld,prop_mse_loss,perfect_recon_acc,run_time\n')
             log_file.close()
         tensorboard_dir=log_fn[:-4]
         os.makedirs(tensorboard_dir,exist_ok=True)
@@ -222,6 +222,7 @@ class VAEShell():
                 avg_kld_losses = []
                 avg_beta_kld_losses = []
                 avg_prop_mse_losses = []
+                avg_perf_recon_accs = []
                 start_run_time = perf_counter()
                 for i in range(self.params['BATCH_CHUNKS']):
                     input_len = self.src_len+1 #input length including padding and start token
@@ -253,9 +254,9 @@ class VAEShell():
                                                                             self.params['CHAR_WEIGHTS'],
                                                                             beta)
                         avg_bcemask_losses.append(bce_mask.item())
+                        acc = 0
                     else:
                         if self.params['ADJ_MAT']:
-                            #print("training with non empty adj matrices")
                             x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask, adjMat_data) #Zoe Added AdjMatrix ", adjMat_data"
                             loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
                                                                   true_prop, pred_prop,
@@ -267,12 +268,14 @@ class VAEShell():
                                                                   true_prop, pred_prop,
                                                                   self.params['CHAR_WEIGHTS'],
                                                                   beta)
+                        acc = perfect_recon_acc(src, x_out, self.tgt_len, self.params["CHAR_DICT"], self.params['ORG_DICT'])
 
                     avg_losses.append(loss.item())
                     avg_bce_losses.append(bce.item())
                     avg_kld_losses.append(kld.item())
                     avg_beta_kld_losses.append(beta_kld.item())
                     avg_prop_mse_losses.append(prop_mse.item())
+                    avg_perf_recon_accs.append(acc)
                     loss.backward()
 
 
@@ -290,11 +293,12 @@ class VAEShell():
                 avg_kld = np.mean(avg_kld_losses)
                 avg_beta_kld = np.mean(avg_beta_kld_losses)
                 avg_prop_mse = np.mean(avg_prop_mse_losses)
+                avg_perf_recon_acc = np.mean(avg_perf_recon_accs)
                 losses.append(avg_loss)
 
                 if log:
                     log_file = open(log_fn, 'a')
-                    log_file.write('{},{},{},{},{},{},{},{},{},{}\n'.format(self.n_epochs,
+                    log_file.write('{},{},{},{},{},{},{},{},{},{},{}\n'.format(self.n_epochs,
                                                                          j, 'train',
                                                                          avg_loss,
                                                                          avg_bce,
@@ -302,6 +306,7 @@ class VAEShell():
                                                                          avg_kld,
                                                                          avg_beta_kld,
                                                                          avg_prop_mse,
+                                                                         avg_perf_recon_acc,
                                                                          run_time))
                     log_file.close()
             train_loss = np.mean(losses)
@@ -318,6 +323,7 @@ class VAEShell():
                 avg_kld_losses = []
                 avg_beta_kld_losses = []
                 avg_prop_mse_losses = []
+                avg_perf_recon_accs = []
                 start_run_time = perf_counter()
                 for i in range(self.params['BATCH_CHUNKS']):
                     input_len = self.src_len+1 #input length including padding and start token
@@ -349,6 +355,7 @@ class VAEShell():
                                                                             self.params['CHAR_WEIGHTS'],
                                                                             beta)
                         avg_bcemask_losses.append(bce_mask.item())
+                        acc = 0
                     else:
                         if self.params['ADJ_MAT']:
                             #print("training with non empty adj matrices")
@@ -363,12 +370,14 @@ class VAEShell():
                                                                   true_prop, pred_prop,
                                                                   self.params['CHAR_WEIGHTS'],
                                                                   beta)
+                        acc = perfect_recon_acc(src, x_out, self.tgt_len, self.params["CHAR_DICT"], self.params['ORG_DICT'])
                         
                     avg_losses.append(loss.item())
                     avg_bce_losses.append(bce.item())
                     avg_kld_losses.append(kld.item())
                     avg_beta_kld_losses.append(beta_kld.item())
                     avg_prop_mse_losses.append(prop_mse.item())
+                    avg_perf_recon_accs.append(acc)
                 stop_run_time = perf_counter()
                 run_time = round(stop_run_time - start_run_time, 5)
                 avg_loss = np.mean(avg_losses)
@@ -384,7 +393,7 @@ class VAEShell():
 
                 if log:
                     log_file = open(log_fn, 'a')
-                    log_file.write('{},{},{},{},{},{},{},{},{}\n'.format(self.n_epochs,
+                    log_file.write('{},{},{},{},{},{},{},{},{},{}\n'.format(self.n_epochs,
                                                                 j, 'test',
                                                                 avg_loss,
                                                                 avg_bce,
@@ -392,6 +401,7 @@ class VAEShell():
                                                                 avg_kld,
                                                                 avg_beta_kld,
                                                                 avg_prop_mse,
+                                                                avg_perf_recon_acc,
                                                                 run_time))
                     log_file.close()
 
@@ -466,7 +476,8 @@ class VAEShell():
             condition_symbol = self.params['CHAR_DICT'][tok]
             condition_vec = torch.ones(mem.shape[0],1).fill_(condition_symbol).long()
             decoded = torch.cat([decoded, condition_vec], dim=1)
-        tgt = torch.ones(mem.shape[0],max_len+1).fill_(start_symbol).long()
+        tgt = torch.ones(mem.shape[0],max_len+2).fill_(start_symbol).long() #add start token for teacher forcing
+        #above +1  hanged to +2 by zoe 
         tgt[:,:len(condition)+1] = decoded
         if src_mask is None and self.model_type == 'transformer':
             mask_lens = self.model.encoder.predict_mask_length(mem)
@@ -483,7 +494,7 @@ class VAEShell():
             tgt = tgt.cuda()
 
         self.model.eval()
-        for i in range(len(condition), max_len):
+        for i in range(len(condition), max_len+1): #+1 added by zoe
             if self.model_type == 'transformer':
                 decode_mask = Variable(subsequent_mask(decoded.size(1)).long())
                 if self.use_gpu:
@@ -491,17 +502,17 @@ class VAEShell():
                 out = self.model.decode(mem, src_mask, Variable(decoded),
                                         decode_mask)
             else:
-                out, _ = self.model.decode(tgt, mem)
-            out = self.model.generator(out)
+                out, _ = self.model.decode(tgt[:, :-1], mem) #last token in tgt not needed for teacher forcing
+            out = self.model.generator(out) #shape is (100, 58, 25) ie no start token
             prob = F.softmax(out[:,i,:], dim=-1)
             _, next_word = torch.max(prob, dim=1)
-            next_word += 1
+            next_word += 1 #convert to alphabet with start token
             tgt[:,i+1] = next_word
             if self.model_type == 'transformer':
                 next_word = next_word.unsqueeze(1)
                 decoded = torch.cat([decoded, next_word], dim=1)
-        decoded = tgt[:,1:]
-        return decoded
+        decoded = tgt[:,1:] #delete the start token
+        return decoded #shape (100, 58) no start token, but uses 26-alphabet
 
     def reconstruct(self, mols, method='greedy', log=True, return_mems=True, return_str=True):
         """
@@ -571,7 +582,8 @@ class VAEShell():
 
                 ### Decode logic
                 if method == 'greedy':
-                    decoded = self.greedy_decode(mem, src_mask=src_mask)
+                    decoded = self.greedy_decode(mem, src_mask=src_mask) #
+                    #outputs seqs of length 57
                 else:
                     decoded = None
 
@@ -1046,8 +1058,6 @@ class ConvBottleneck(nn.Module):
         first = True
         for i in range(3):
             out_d = int((in_d - 64) // 2 + 64)
-            #print("in dimension is " + str(in_d))
-            #print("out dimension is " + str(out_d))
             if first:
                 kernel_size = 4 #used to be 9 now 4
                 first = False
@@ -1088,9 +1098,7 @@ class DeconvBottleneck(nn.Module):
 
     def forward(self, x):
         for deconv in self.deconv_layers:
-            #print("deconv dimension " + str(list(x.size())))
             x = F.relu(deconv(x))
-        #print("deconv dimension " + str(list(x.size())))
         return x
 
 ############## Property Predictor #################
