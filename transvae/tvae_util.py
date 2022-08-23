@@ -155,6 +155,26 @@ def get_char_weights(train_smiles, params, freq_penalty=0.5):
 
 ####### POSTPROCESSING HELPERS ##########
 
+def old_perfect_recon_acc(x, x_out, tgt_len, char_dict, org_dict):
+    #x is (100, 59) includes start token encoded with 26-alphabet
+    x = x.long()[:,1:] #get rid of start token
+    start_symbol = char_dict['<start>']
+    predicted = torch.ones(x.shape[0],tgt_len+1).fill_(start_symbol).long() #shape (100, 58), starts token, missing last token
+    for i in range(tgt_len): #i ranges from 0 to 56
+        prob = F.softmax(x_out[:,i,:], dim=-1) #x_out has length 58, so last column is never considered
+        _, next_word = torch.max(prob, dim=1)
+        next_word += 1
+        predicted[:,i+1] = next_word
+    predicted = predicted[:,1:]
+    predicted = decode_mols(predicted, org_dict)
+    x = decode_mols(x, org_dict)
+    zipped = zip(predicted, x)
+    acc = 0
+    for recon_mol, mol in zipped:
+        if recon_mol == mol: 
+            acc += 1
+    return acc/len(x)
+
 def decode_mols(encoded_tensors, org_dict):
     "Decodes tensor containing token ids into string"
     mols = []

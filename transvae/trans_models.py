@@ -191,7 +191,7 @@ class VAEShell():
             log_file = open(log_fn, 'a')
             log_file.write("zoe test here\n")
             if not already_wrote:
-                log_file.write('epoch,batch_idx,data_type,tot_loss,recon_loss,pred_loss,kld_loss,beta_kld,prop_mse_loss,run_time\n')
+                log_file.write('epoch,batch_idx,data_type,tot_loss,recon_loss,pred_loss,kld_loss,beta_kld,prop_mse_loss,perfect_recon_acc,run_time\n')
             log_file.close()
         tensorboard_dir=log_fn[:-4]
         os.makedirs(tensorboard_dir,exist_ok=True)
@@ -199,10 +199,8 @@ class VAEShell():
 
         ### Initialize Annealer
         kl_annealer = KLAnnealer(self.params['BETA_INIT'], self.params['BETA'], 
-                                    epochs, self.params['ANNEAL_START']) #set 20 epochs limit to scaling beta
+                                    40, self.params['ANNEAL_START'])#stop increasing beta at 40 epochs
 
-        #print("stop increasing beta at 10 epochs")
-        ### Epoch loop
         
         for epoch in range(epochs):
             start_time = time.time()
@@ -217,6 +215,7 @@ class VAEShell():
                 avg_kld_losses = []
                 avg_beta_kld_losses = []
                 avg_prop_mse_losses = []
+                avg_perf_recon_accs = []
                 start_run_time = perf_counter()
                 for i in range(self.params['BATCH_CHUNKS']):
                     input_len = self.src_len+1 #input length including padding and start token
@@ -231,6 +230,8 @@ class VAEShell():
                     if self.use_gpu:
                         mols_data = mols_data.cuda()
                         props_data = props_data.cuda()
+                        if self.params['ADJ_MAT']:
+                            adjMat_data = adjMat_data.cuda()
 
 
                     src = Variable(mols_data).long()
@@ -256,18 +257,22 @@ class VAEShell():
                                                                   true_prop, pred_prop,
                                                                   self.params['CHAR_WEIGHTS'],
                                                                   beta)
+                            acc = 0
                         else:
                             x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask) #Zoe Added AdjMatrix ", adjMat_data"
                             loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
                                                                   true_prop, pred_prop,
                                                                   self.params['CHAR_WEIGHTS'],
                                                                   beta)
+                        #acc = self.perfect_recon_acc(src, x_out, self.tgt_len, self.params["CHAR_DICT"], self.params['ORG_DICT'])
+                        acc=0
 
                     avg_losses.append(loss.item())
                     avg_bce_losses.append(bce.item())
                     avg_kld_losses.append(kld.item())
                     avg_beta_kld_losses.append(beta_kld.item())
                     avg_prop_mse_losses.append(prop_mse.item())
+                    avg_perf_recon_accs.append(acc)
                     loss.backward()
                 self.optimizer.step()
                 self.model.zero_grad()
@@ -275,6 +280,7 @@ class VAEShell():
                 run_time = round(stop_run_time - start_run_time, 5)
                 avg_loss = np.mean(avg_losses)
                 avg_bce = np.mean(avg_bce_losses)
+                avg_perf_recon_acc = np.mean(avg_perf_recon_accs)
                 if len(avg_bcemask_losses) == 0:
                     avg_bcemask = 0
                 else:
@@ -286,7 +292,7 @@ class VAEShell():
 
                 if log:
                     log_file = open(log_fn, 'a')
-                    log_file.write('{},{},{},{},{},{},{},{},{},{}\n'.format(self.n_epochs,
+                    log_file.write('{},{},{},{},{},{},{},{},{},{},{}\n'.format(self.n_epochs,
                                                                          j, 'train',
                                                                          avg_loss,
                                                                          avg_bce,
@@ -294,6 +300,7 @@ class VAEShell():
                                                                          avg_kld,
                                                                          avg_beta_kld,
                                                                          avg_prop_mse,
+                                                                         avg_perf_recon_acc,
                                                                          run_time))
                     log_file.close()
             train_loss = np.mean(losses)
@@ -310,14 +317,22 @@ class VAEShell():
                 avg_kld_losses = []
                 avg_beta_kld_losses = []
                 avg_prop_mse_losses = []
+                avg_perf_recon_accs = []
                 start_run_time = perf_counter()
                 for i in range(self.params['BATCH_CHUNKS']):
+                    input_len = self.src_len+1 #input length including padding and start token
                     batch_data = data[i*self.chunk_size:(i+1)*self.chunk_size,:]
-                    mols_data = batch_data[:,:-1]
-                    props_data = batch_data[:,-1]
+                    mols_data = batch_data[:,:input_len] #changed by zoe
+                    if self.params['ADJ_MAT']:
+                        adjMat_data = batch_data[:, input_len:-1] #added by zoe
+                        adjMat_data = torch.reshape(adjMat_data, (self.chunk_size, input_len, input_len))
+                    else:
+                        adjMat_data = None
                     if self.use_gpu:
                         mols_data = mols_data.cuda()
                         props_data = props_data.cuda()
+                        if self.params['ADJ_MAT']:
+                            adjMat_data = adjMat_data.cuda()
 
                     src = Variable(mols_data).long()
                     tgt = Variable(mols_data[:,:-1]).long()
@@ -335,17 +350,30 @@ class VAEShell():
                                                                             self.params['CHAR_WEIGHTS'],
                                                                             beta)
                         avg_bcemask_losses.append(bce_mask.item())
+                        acc = 0
                     else:
-                        x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask)
-                        loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
+                        if self.params['ADJ_MAT']:
+                            #print("training with non empty adj matrices")
+                            x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask, adjMat_data) #Zoe Added AdjMatrix ", adjMat_data"
+                            loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
                                                                   true_prop, pred_prop,
                                                                   self.params['CHAR_WEIGHTS'],
                                                                   beta)
+                        else:
+                            x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask) #Zoe Added AdjMatrix ", adjMat_data"
+                            loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
+                                                                  true_prop, pred_prop,
+                                                                  self.params['CHAR_WEIGHTS'],
+                                                                  beta)
+                        #acc = self.perfect_recon_acc(src, x_out, self.tgt_len, self.params["CHAR_DICT"], self.params['ORG_DICT'])
+                        acc=0
+
                     avg_losses.append(loss.item())
                     avg_bce_losses.append(bce.item())
                     avg_kld_losses.append(kld.item())
-                    avg_beta_kld_losses.append(kld.item())
+                    avg_beta_kld_losses.append(beta_kld.item())
                     avg_prop_mse_losses.append(prop_mse.item())
+                    avg_perf_recon_accs.append(acc)
                 stop_run_time = perf_counter()
                 run_time = round(stop_run_time - start_run_time, 5)
                 avg_loss = np.mean(avg_losses)
@@ -357,11 +385,12 @@ class VAEShell():
                 avg_kld = np.mean(avg_kld_losses)
                 avg_beta_kld = np.mean(avg_beta_kld_losses)
                 avg_prop_mse = np.mean(avg_prop_mse_losses)
+                avg_perf_recon_acc = np.mean(avg_perf_recon_accs)
                 losses.append(avg_loss)
 
                 if log:
                     log_file = open(log_fn, 'a')
-                    log_file.write('{},{},{},{},{},{},{},{},{}\n'.format(self.n_epochs,
+                    log_file.write('{},{},{},{},{},{},{},{},{},{}\n'.format(self.n_epochs,
                                                                 j, 'test',
                                                                 avg_loss,
                                                                 avg_bce,
@@ -369,6 +398,7 @@ class VAEShell():
                                                                 avg_kld,
                                                                 avg_beta_kld,
                                                                 avg_prop_mse,
+                                                                avg_perf_recon_acc,
                                                                 run_time))
                     log_file.close()
 
@@ -425,6 +455,7 @@ class VAEShell():
                     z[:,d] = torch.randn(size)
         return z
 
+    
     def greedy_decode(self, mem, src_mask=None, condition=[]):
         """
         Greedy decode from model memory
@@ -436,6 +467,8 @@ class VAEShell():
         Returns:
             decoded (torch.tensor): Tensor of predicted token ids
         """
+        torch.cuda.empty_cache()
+
         start_symbol = self.params['CHAR_DICT']['<start>']
         max_len = self.tgt_len
         decoded = torch.ones(mem.shape[0],1).fill_(start_symbol).long()
@@ -443,7 +476,8 @@ class VAEShell():
             condition_symbol = self.params['CHAR_DICT'][tok]
             condition_vec = torch.ones(mem.shape[0],1).fill_(condition_symbol).long()
             decoded = torch.cat([decoded, condition_vec], dim=1)
-        tgt = torch.ones(mem.shape[0],max_len+1).fill_(start_symbol).long()
+        tgt = torch.ones(mem.shape[0],max_len+2).fill_(start_symbol).long() #add start token for teacher forcing
+        #above +1  hanged to +2 by zoe 
         tgt[:,:len(condition)+1] = decoded
         if src_mask is None and self.model_type == 'transformer':
             mask_lens = self.model.encoder.predict_mask_length(mem)
@@ -460,7 +494,7 @@ class VAEShell():
             tgt = tgt.cuda()
 
         self.model.eval()
-        for i in range(len(condition), max_len):
+        for i in range(len(condition), max_len+1): #+1 added by zoe
             if self.model_type == 'transformer':
                 decode_mask = Variable(subsequent_mask(decoded.size(1)).long())
                 if self.use_gpu:
@@ -468,25 +502,50 @@ class VAEShell():
                 out = self.model.decode(mem, src_mask, Variable(decoded),
                                         decode_mask)
             else:
-                out, _ = self.model.decode(tgt, mem)
-            out = self.model.generator(out)
+                out, _ = self.model.decode(tgt[:, :-1], mem) #last token in tgt not needed for teacher forcing
+            out = self.model.generator(out) #shape is (100, 58, 25) ie no start token
             prob = F.softmax(out[:,i,:], dim=-1)
             _, next_word = torch.max(prob, dim=1)
-            next_word += 1
+            next_word += 1 #convert to alphabet with start token
             tgt[:,i+1] = next_word
             if self.model_type == 'transformer':
                 next_word = next_word.unsqueeze(1)
                 decoded = torch.cat([decoded, next_word], dim=1)
-        decoded = tgt[:,1:]
-        return decoded
+        decoded = tgt[:,1:] #delete the start token
+        return decoded #shape (100, 58) no start token, but uses 26-alphabet
 
-    def reconstruct(self, data, method='greedy', log=True, return_mems=True, return_str=True):
+    def perfect_recon_acc(self, x, mem, tgt_len, char_dict, org_dict):
+        #x is (100, 59) includes start token encoded with 26-alphabet
+        x = x.long()[:,1:] #get rid of start token
+        start_symbol = char_dict['<start>']
+        predicted = torch.ones(x.shape[0],tgt_len+2).fill_(start_symbol).long() #shape (100, 58), starts token, missing last token
+        for i in range(tgt_len+1): #i ranges from 0 to 56
+            out, _ = self.model.decode(predicted[:, :-1], mem) #last token in tgt not needed for teacher forcing
+            out = self.model.generator(out)
+            prob = F.softmax(out[:,i,:], dim=-1) #x_out has length 58, so last column is never considered
+            _, next_word = torch.max(prob, dim=1)
+            next_word += 1
+            predicted[:,i+1] = next_word
+        predicted = predicted[:,1:]
+        predicted = decode_mols(predicted, org_dict)
+        x = decode_mols(x, org_dict)
+        zipped = zip(predicted, x)
+        acc = 0
+        for recon_mol, mol in zipped:
+            if recon_mol == mol: 
+                acc += 1
+        return acc/len(x)
+    
+    
+    
+    
+    def reconstruct(self, mols, method='greedy', log=True, return_mems=True, return_str=True):
         """
         Method for encoding input smiles into memory and decoding back
         into smiles
 
         Arguments:
-            data (np.array, required): Input array consisting of smiles and property
+            mols (np.array, required): Input array consisting of smiles and property
             method (str): Method for decoding. Greedy decoding is currently the only
                           method implemented. May implement beam search, top_p or top_k
                           in future versions.
@@ -499,30 +558,41 @@ class VAEShell():
                                    token ids
             mems (np.array): Array of model memory vectors
         """
-        data = vae_data_gen(data, None, self.params['CHAR_DICT'], self.src_len)
+        data = vae_data_gen(mols, None, self.params['CHAR_DICT'], self.src_len, use_adj=self.params["ADJ_MAT"], adj_weight=self.params["ADJ_WEIGHT"])
+        #data = dataloader.VAE_Dataset(data, None, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
 
         data_iter = torch.utils.data.DataLoader(data,
                                                 batch_size=self.params['BATCH_SIZE'],
-                                                shuffle=False, num_workers=0,
+                                                shuffle=False,num_workers=0,
                                                 pin_memory=False, drop_last=True)
         self.batch_size = self.params['BATCH_SIZE']
         self.chunk_size = self.batch_size // self.params['BATCH_CHUNKS']
+
+        input_len = self.src_len+1 #added by Zoe
 
         self.model.eval()
         decoded_smiles = []
         mems = torch.empty((data.shape[0], self.params['d_latent'])).cpu()
         for j, data in enumerate(data_iter):
+            print("Batch " + str(j))
             if log:
                 log_file = open('calcs/{}_progress.txt'.format(self.name), 'a')
                 log_file.write('{}\n'.format(j))
                 log_file.close()
             for i in range(self.params['BATCH_CHUNKS']):
                 batch_data = data[i*self.chunk_size:(i+1)*self.chunk_size,:]
-                mols_data = batch_data[:,:-1]
+                mols_data = batch_data[:,:input_len] #changed by zoe
+                if self.params['ADJ_MAT']:
+                    adjMat_data = batch_data[:, input_len:-1] #added by zoe
+                    adjMat_data = torch.reshape(adjMat_data, (self.chunk_size, input_len, input_len))
+                else:
+                    adjMat_data = None
                 props_data = batch_data[:,-1]
                 if self.use_gpu:
                     mols_data = mols_data.cuda()
                     props_data = props_data.cuda()
+                    if self.params['ADJ_MAT']:
+                        adjMat_data = adjMat_data.cuda()
 
                 src = Variable(mols_data).long()
                 src_mask = (src != self.pad_idx).unsqueeze(-2)
@@ -531,7 +601,7 @@ class VAEShell():
                 if self.model_type == 'transformer':
                     _, mem, _, _ = self.model.encode(src, src_mask)
                 else:
-                    _, mem, _ = self.model.encode(src)
+                    _, mem, _ = self.model.encode(src, adjMatrix=adjMat_data)
                 start = j*self.batch_size+i*self.chunk_size
                 stop = j*self.batch_size+(i+1)*self.chunk_size
                 mems[start:stop, :] = mem.detach().cpu()
@@ -547,6 +617,7 @@ class VAEShell():
                     decoded_smiles += decoded
                 else:
                     decoded_smiles.append(decoded)
+
 
         if return_mems:
             return decoded_smiles, mems.detach().numpy()
@@ -604,8 +675,7 @@ class VAEShell():
             mus(np.array): Mean memory array (prior to reparameterization)
             logvars(np.array): Log variance array (prior to reparameterization)
         """
-        data = vae_data_gen(data, props=None, char_dict=self.params['CHAR_DICT'])
-
+        data = self.data_gen(data, None, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
         data_iter = torch.utils.data.DataLoader(data,
                                                 batch_size=self.params['BATCH_SIZE'],
                                                 shuffle=False, num_workers=0,
@@ -624,21 +694,29 @@ class VAEShell():
                 log_file.write('{}\n'.format(j))
                 log_file.close()
             for i in range(self.params['BATCH_CHUNKS']):
+                input_len = self.src_len+1 #input length including padding and start token
                 batch_data = data[i*self.chunk_size:(i+1)*self.chunk_size,:]
-                mols_data = batch_data[:,:-1]
+                mols_data = batch_data[:,:input_len] #changed by zoe
+                if self.params['ADJ_MAT']:
+                    adjMat_data = batch_data[:, input_len:-1] #added by zoe
+                    adjMat_data = torch.reshape(adjMat_data, (self.chunk_size, input_len, input_len))
+                else:
+                    adjMat_data = None
                 props_data = batch_data[:,-1]
                 if self.use_gpu:
                     mols_data = mols_data.cuda()
                     props_data = props_data.cuda()
+                    if self.params['ADJ_MAT']:
+                        adjMat_data = adjMat_data.cuda()
 
                 src = Variable(mols_data).long()
                 src_mask = (src != self.pad_idx).unsqueeze(-2)
 
                 ### Run through encoder to get memory
                 if self.model_type == 'transformer':
-                    mem, mu, logvar, _ = self.model.encode(src, src_mask)
+                    mem, mu, logvar, _ = self.model.encode(src, src_mask,)
                 else:
-                    mem, mu, logvar = self.model.encode(src)
+                    mem, mu, logvar = self.model.encode(src, adjMat_data)
                 start = j*self.batch_size+i*self.chunk_size
                 stop = j*self.batch_size+(i+1)*self.chunk_size
                 mems[start:stop, :] = mem.detach().cpu()
