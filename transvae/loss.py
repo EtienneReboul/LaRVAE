@@ -7,7 +7,7 @@ from torch.autograd import Variable
 
 def vae_loss(x, x_out, mu, logvar, true_prop, pred_prop, weights, beta=1):
     "Binary Cross Entropy Loss + Kiebler-Lublach Divergence"
-    x = x.long()[:,1:] - 1
+    x = x.long()[:,1:] - 1 #get rid of start token and shift by 1
     x = x.contiguous().view(-1)
     x_out = x_out.contiguous().view(-1, x_out.size(2))
     BCE = F.cross_entropy(x_out, x, reduction='mean', weight=weights)
@@ -36,3 +36,5 @@ def trans_vae_loss(x, x_out, mu, logvar, true_len, pred_len, true_prop, pred_pro
     if torch.isnan(KLD):
         KLD = torch.tensor(0.)
     return BCEmol + BCEmask + KLD + MSE, BCEmol, BCEmask, KLD, MSE
+
+

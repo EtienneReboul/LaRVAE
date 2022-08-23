@@ -1,9 +1,5 @@
-from selfies import encoder, decoder, split_selfies
-import rdkit
+from selfies import split_selfies
 import numpy as np
-from rdkit import Chem
-from rdkit.Chem import MolFromSmiles as smi2mol
-import pandas as pd
 
 
 branch_tokens=[f"[Branch{i}]" for i in range(1,4)]
@@ -30,9 +26,13 @@ num_dict={
         "[P]" : 15
     }
 
+def selfies_split(selfies):
+    return [block+"]" for block in selfies.split("]")][:-1]
+
 def get_numeric_value(token):
     if token not in num_dict.keys():
         print("Not a valid number token: " + token)
+        raise RuntimeError
         value = None
     else:
         value = num_dict[token]
@@ -79,6 +79,7 @@ def processAtoms(prev_atom_idx, cur_idx, num_tokens_to_process, tokens, adj_matr
 
 def processBranch(prev_atom_idx, start_idx, tokens, adj_matrix, atom_list):
     #print("enter branch")
+    #print(start_idx)
 
     branch_token = tokens[start_idx]
 
@@ -97,6 +98,7 @@ def processBranch(prev_atom_idx, start_idx, tokens, adj_matrix, atom_list):
         number_token_idxs = [start_idx+1, start_idx+2, start_idx+3]
     else:
         print("Invalid branch token: " + branch_token)
+        raise RuntimeError
     
     
     atom_list.append(next_atom_idx)
@@ -140,15 +142,16 @@ def processRing(prev_atom_idx, start_idx, tokens, adj_matrix, atom_list):
         next_idx = start_idx + 4
         number_token_idxs = [start_idx+1, start_idx+2, start_idx+3]
     else:
-        print("Invalid branch token: " + ring_token)  
+        print("Invalid branch token: " + ring_token)
+        raise RuntimeError 
     
     num = computeHexNumber(number_tokens)
 
-    if len(atom_list) >= num+1:
-        start_ring_atom_idx = atom_list[-num-1]
-    else:
+    if len(atom_list) < num+1:
         print("Ring of size " + str(num+1) + " too big for atom list of size " + str(len(atom_list)))
-        print(atom_list)
+        raise RuntimeError
+    else:
+        start_ring_atom_idx = atom_list[-num-1]
     
     ring_atom_idxs = [prev_atom_idx, start_ring_atom_idx] #list of two atoms closing ring
 
@@ -169,6 +172,12 @@ def processRing(prev_atom_idx, start_idx, tokens, adj_matrix, atom_list):
 
 def getGrammarEdges1(branch_or_ring_idx, number_token_idxs, other_token_id, adj_matrix):
     value = 1
+    problem = (branch_or_ring_idx[-1] >= len(adj_matrix) 
+                or number_token_idxs[-1] >= len(adj_matrix)
+                or other_token_id[-1] >= len(adj_matrix))
+    if problem:
+        print("Grammer edge indices out of bound")
+        raise RuntimeError
     fullyConnect(branch_or_ring_idx, number_token_idxs, adj_matrix, value, bidirectional=True) #Connect branch/ring to number tokens
     fullyConnect(number_token_idxs, number_token_idxs, adj_matrix, value, bidirectional=True) #Connect digits in hex number to each other
     fullyConnect(number_token_idxs, other_token_id, adj_matrix, value, bidirectional=True) #Connect number tokens to tokens in branch or to tokens closing ring
@@ -177,7 +186,7 @@ def getGrammarEdges1(branch_or_ring_idx, number_token_idxs, other_token_id, adj_
 def getAdjMatrixFromSelfie(selfie, length, c=0.3):
 
     #preprocess
-    tokens = list(split_selfies(selfie))
+    tokens = list(selfies_split(selfie))
     start_token = tokens[0]
 
     #initializing
@@ -186,6 +195,7 @@ def getAdjMatrixFromSelfie(selfie, length, c=0.3):
 
     if start_token in branch_tokens or start_token in ring_tokens:
         print("Error: seflie must start with atom token")
+        raise RuntimeError
     else:
         atom_list.append(0)
         processAtoms(0, 1, len(tokens)-2, tokens, adj_matrix, atom_list)
@@ -200,6 +210,6 @@ def getAdjMatrixFromSelfie(selfie, length, c=0.3):
     return atom_list, full_matrix
 
 
-#atom_list, full_matrix = getAdjMatrixFromSelfie("[C][C][=C][C][=C][Branch1][Branch1][C][=C][Ring1][=Branch1][C]", 20, c=0.3)
+#atom_list, full_matrix = getAdjMatrixFromSelfie("[C][C][=C][C][=C][Branch1][Branch1][C][=C][Ring1][=Branch1][C]", 20, c=0.0)
 #print(atom_list)
 #print(full_matrix)

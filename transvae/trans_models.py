@@ -17,6 +17,7 @@ from transvae.tvae_util import *
 from transvae.opt import NoamOpt
 from transvae.data import vae_data_gen, make_std_mask
 from transvae.loss import vae_loss, trans_vae_loss
+import dataloader
 
 
 
@@ -154,6 +155,9 @@ class VAEShell():
             log_dir (str): Directory to store log files
         """
         ### Prepare data iterators
+        #train_data = dataloader.VAE_Dataset(train_mols, train_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
+        #val_data = dataloader.VAE_Dataset(val_mols, val_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
+
         train_data = self.data_gen(train_mols, train_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
         val_data = self.data_gen(val_mols, val_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
 
@@ -201,7 +205,9 @@ class VAEShell():
         kl_annealer = KLAnnealer(self.params['BETA_INIT'], self.params['BETA'], 
                                     40, self.params['ANNEAL_START'])#stop increasing beta at 40 epochs
 
-        
+        #print("stop increasing beta at 10 epochs")
+        ### Epoch loop
+        train_step = 0
         for epoch in range(epochs):
             start_time = time.time()
             ### Train Loop
@@ -209,6 +215,7 @@ class VAEShell():
             losses = []
             beta = kl_annealer(epoch)
             for j, data in enumerate(train_iter):
+                train_step += 1
                 avg_losses = []
                 avg_bce_losses = []
                 avg_bcemask_losses = []
@@ -233,7 +240,6 @@ class VAEShell():
                         if self.params['ADJ_MAT']:
                             adjMat_data = adjMat_data.cuda()
 
-
                     src = Variable(mols_data).long()
                     tgt = Variable(mols_data[:,:-1]).long()
                     true_prop = Variable(props_data)
@@ -249,9 +255,9 @@ class VAEShell():
                                                                             self.params['CHAR_WEIGHTS'],
                                                                             beta)
                         avg_bcemask_losses.append(bce_mask.item())
+                        acc = 0
                     else:
                         if self.params['ADJ_MAT']:
-                            #print("training with non empty adj matrices")
                             x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask, adjMat_data) #Zoe Added AdjMatrix ", adjMat_data"
                             loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
                                                                   true_prop, pred_prop,
@@ -274,6 +280,9 @@ class VAEShell():
                     avg_prop_mse_losses.append(prop_mse.item())
                     avg_perf_recon_accs.append(acc)
                     loss.backward()
+
+
+
                 self.optimizer.step()
                 self.model.zero_grad()
                 stop_run_time = perf_counter()
@@ -288,6 +297,7 @@ class VAEShell():
                 avg_kld = np.mean(avg_kld_losses)
                 avg_beta_kld = np.mean(avg_beta_kld_losses)
                 avg_prop_mse = np.mean(avg_prop_mse_losses)
+                avg_perf_recon_acc = np.mean(avg_perf_recon_accs)
                 losses.append(avg_loss)
 
                 if log:
@@ -367,7 +377,6 @@ class VAEShell():
                                                                   beta)
                         #acc = self.perfect_recon_acc(src, x_out, self.tgt_len, self.params["CHAR_DICT"], self.params['ORG_DICT'])
                         acc=0
-
                     avg_losses.append(loss.item())
                     avg_bce_losses.append(bce.item())
                     avg_kld_losses.append(kld.item())
@@ -514,6 +523,7 @@ class VAEShell():
         decoded = tgt[:,1:] #delete the start token
         return decoded #shape (100, 58) no start token, but uses 26-alphabet
 
+
     def perfect_recon_acc(self, x, mem, tgt_len, char_dict, org_dict):
         #x is (100, 59) includes start token encoded with 26-alphabet
         x = x.long()[:,1:] #get rid of start token
@@ -535,8 +545,6 @@ class VAEShell():
             if recon_mol == mol: 
                 acc += 1
         return acc/len(x)
-    
-    
     
     
     def reconstruct(self, mols, method='greedy', log=True, return_mems=True, return_str=True):
@@ -594,6 +602,7 @@ class VAEShell():
                     if self.params['ADJ_MAT']:
                         adjMat_data = adjMat_data.cuda()
 
+
                 src = Variable(mols_data).long()
                 src_mask = (src != self.pad_idx).unsqueeze(-2)
 
@@ -608,7 +617,8 @@ class VAEShell():
 
                 ### Decode logic
                 if method == 'greedy':
-                    decoded = self.greedy_decode(mem, src_mask=src_mask)
+                    decoded = self.greedy_decode(mem, src_mask=src_mask) #
+                    #outputs seqs of length 57
                 else:
                     decoded = None
 
@@ -675,6 +685,7 @@ class VAEShell():
             mus(np.array): Mean memory array (prior to reparameterization)
             logvars(np.array): Log variance array (prior to reparameterization)
         """
+
         data = self.data_gen(data, None, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
         data_iter = torch.utils.data.DataLoader(data,
                                                 batch_size=self.params['BATCH_SIZE'],
@@ -1090,8 +1101,6 @@ class ConvBottleneck(nn.Module):
         first = True
         for i in range(3):
             out_d = int((in_d - 64) // 2 + 64)
-            #print("in dimension is " + str(in_d))
-            #print("out dimension is " + str(out_d))
             if first:
                 kernel_size = 4 #used to be 9 now 4
                 first = False
@@ -1132,9 +1141,7 @@ class DeconvBottleneck(nn.Module):
 
     def forward(self, x):
         for deconv in self.deconv_layers:
-            #print("deconv dimension " + str(list(x.size())))
             x = F.relu(deconv(x))
-        #print("deconv dimension " + str(list(x.size())))
         return x
 
 ############## Property Predictor #################

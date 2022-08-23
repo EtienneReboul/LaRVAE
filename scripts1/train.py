@@ -6,7 +6,6 @@ import pickle
 import sys
 import numpy as np
 import pandas as pd
-from torchsummary import summary
 
 
 from torch import load, device
@@ -52,7 +51,7 @@ def train(args):
         assert args.train_mols_path is not None and args.test_mols_path is not None and args.vocab_path is not None,\
         "ERROR: Must specify files for train/test data and vocabulary"
         print("start load data: " + str(time.time() - start_time))
-        train_mols = pd.read_csv(args.train_mols_path).to_numpy()
+        train_mols = pd.read_csv(args.train_mols_path).to_numpy() #just take first samples
         test_mols = pd.read_csv(args.test_mols_path).to_numpy()
         print("end load data: " + str(time.time() - start_time))
         if args.property_predictor:
