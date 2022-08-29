@@ -17,7 +17,7 @@ from transvae.tvae_util import *
 from transvae.opt import NoamOpt
 from transvae.data import vae_data_gen, make_std_mask
 from transvae.loss import vae_loss, trans_vae_loss
-import dataloader
+#import dataloader
 
 
 
