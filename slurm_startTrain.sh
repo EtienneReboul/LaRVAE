@@ -8,4 +8,5 @@
 #SBATCH --cpus-per-task=20
 #SBATCH --gres=gpu:1
 module restore LaRVAE_py_3810
-python scripts1/train.py --model rnnattn --d_latent 48 --data_source custom --train_mols_path data/moses_train.txt --test_mols_path data/moses_test.txt --vocab_path data/moses_char_dict.pkl --char_weights_path data/moses_char_weights.npy --epochs 70  --save_name 70_008_AdjVAE_lat48 --adj_matrix --adj_weight 0.08
+python scripts1/train.py --model rnnattn  --d_latent 28 --data_source custom --train_mols_path data/moses_train.csv --test_mols_path data/moses_test.csv --vocab_path data/moses_char_dict.pkl --char_weights_path data/moses_char_weights.npy --epochs 100  --save_name 100_NoAdj_MMD --mmd_use 
+#--batch_size 100

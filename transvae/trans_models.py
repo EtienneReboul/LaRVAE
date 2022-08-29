@@ -8,10 +8,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math, copy, time
 from torch.autograd import Variable
-try:
-    from torch.utils.tensorboard import SummaryWriter
-except:
-    from tensorboardX import SummaryWriter
+# try:
+#     from torch.utils.tensorboard import SummaryWriter
+# except:
+#     from tensorboardX import SummaryWriter
 
 from transvae.tvae_util import *
 from transvae.opt import NoamOpt
@@ -133,9 +133,9 @@ class VAEShell():
     def train(self, train_mols, val_mols, train_props=None, val_props=None,
               epochs=100, save=True, save_freq=None, log=True, log_dir='trials'): #, end_beta_scale=20
         
-        with open("logs/betaTestFile.txt", "w") as f:
-            f.write("end_beta_scale is 20")
-            f.close()
+        # with open("logs/betaTestFile.txt", "w") as f:
+        #     f.write("end_beta_scale is 20")
+        #     f.close()
         """
         Train model and validate
 
@@ -193,13 +193,12 @@ class VAEShell():
             except FileNotFoundError:
                 already_wrote = False
             log_file = open(log_fn, 'a')
-            log_file.write("zoe test here\n")
             if not already_wrote:
-                log_file.write('epoch,batch_idx,data_type,tot_loss,recon_loss,pred_loss,kld_loss,beta_kld,prop_mse_loss,perfect_recon_acc,run_time\n')
+                log_file.write('epoch,batch_idx,data_type,tot_loss,recon_loss,pred_loss,kld_loss,beta_kld,mmd_loss,prop_mse_loss,perfect_recon_acc,run_time\n')
             log_file.close()
-        tensorboard_dir=log_fn[:-4]
-        os.makedirs(tensorboard_dir,exist_ok=True)
-        writer = SummaryWriter(tensorboard_dir)
+        # tensorboard_dir=log_fn[:-4]
+        # os.makedirs(tensorboard_dir,exist_ok=True)
+        # writer = SummaryWriter(tensorboard_dir)
 
         ### Initialize Annealer
         kl_annealer = KLAnnealer(self.params['BETA_INIT'], self.params['BETA'], 
@@ -221,6 +220,7 @@ class VAEShell():
                 avg_bcemask_losses = []
                 avg_kld_losses = []
                 avg_beta_kld_losses = []
+                avg_MMD_losses=[]
                 avg_prop_mse_losses = []
                 avg_perf_recon_accs = []
                 start_run_time = perf_counter()
@@ -259,17 +259,27 @@ class VAEShell():
                     else:
                         if self.params['ADJ_MAT']:
                             x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask, adjMat_data) #Zoe Added AdjMatrix ", adjMat_data"
-                            loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
-                                                                  true_prop, pred_prop,
-                                                                  self.params['CHAR_WEIGHTS'],
-                                                                  beta)
-                            acc = 0
+                            
                         else:
                             x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask) #Zoe Added AdjMatrix ", adjMat_data"
+
+                        if self.params['MMD_USE']:
+                            loss, bce,MMD_loss,prop_mse = self.loss_func(src, x_out, mu, logvar,
+                                                                    true_prop, pred_prop,
+                                                                    self.params['CHAR_WEIGHTS'],
+                                                                    beta,
+                                                                    MMD_use=True,
+                                                                    latent_size=self.params['LATENT_SIZE'],
+                                                                    device=self.device)
+                            kld=torch.tensor(0.)
+                            beta_kld=torch.tensor(0.)
+                        else:
                             loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
-                                                                  true_prop, pred_prop,
-                                                                  self.params['CHAR_WEIGHTS'],
-                                                                  beta)
+                                                                    true_prop, pred_prop,
+                                                                    self.params['CHAR_WEIGHTS'],
+                                                                    beta)
+                            MMD_loss=torch.tensor(0.)
+
                         #acc = self.perfect_recon_acc(src, x_out, self.tgt_len, self.params["CHAR_DICT"], self.params['ORG_DICT'])
                         acc=0
 
@@ -277,6 +287,7 @@ class VAEShell():
                     avg_bce_losses.append(bce.item())
                     avg_kld_losses.append(kld.item())
                     avg_beta_kld_losses.append(beta_kld.item())
+                    avg_MMD_losses.append(MMD_loss.item())
                     avg_prop_mse_losses.append(prop_mse.item())
                     avg_perf_recon_accs.append(acc)
                     loss.backward()
@@ -290,6 +301,7 @@ class VAEShell():
                 avg_loss = np.mean(avg_losses)
                 avg_bce = np.mean(avg_bce_losses)
                 avg_perf_recon_acc = np.mean(avg_perf_recon_accs)
+                avg_MMD=np.mean(avg_MMD_losses)
                 if len(avg_bcemask_losses) == 0:
                     avg_bcemask = 0
                 else:
@@ -302,13 +314,14 @@ class VAEShell():
 
                 if log:
                     log_file = open(log_fn, 'a')
-                    log_file.write('{},{},{},{},{},{},{},{},{},{},{}\n'.format(self.n_epochs,
+                    log_file.write('{},{},{},{},{},{},{},{},{},{},{},{}\n'.format(self.n_epochs,
                                                                          j, 'train',
                                                                          avg_loss,
                                                                          avg_bce,
                                                                          avg_bcemask,
                                                                          avg_kld,
                                                                          avg_beta_kld,
+                                                                         avg_MMD,
                                                                          avg_prop_mse,
                                                                          avg_perf_recon_acc,
                                                                          run_time))
@@ -317,6 +330,8 @@ class VAEShell():
 
             print("train time for one epoch: " + str(time.time() - start_time))
             start_time = time.time()
+            
+            
             ### Val Loop
             self.model.eval()
             losses = []
@@ -326,6 +341,7 @@ class VAEShell():
                 avg_bcemask_losses = []
                 avg_kld_losses = []
                 avg_beta_kld_losses = []
+                avg_MMD_losses=[]
                 avg_prop_mse_losses = []
                 avg_perf_recon_accs = []
                 start_run_time = perf_counter()
@@ -363,30 +379,43 @@ class VAEShell():
                         acc = 0
                     else:
                         if self.params['ADJ_MAT']:
-                            #print("training with non empty adj matrices")
                             x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask, adjMat_data) #Zoe Added AdjMatrix ", adjMat_data"
-                            loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
-                                                                  true_prop, pred_prop,
-                                                                  self.params['CHAR_WEIGHTS'],
-                                                                  beta)
+                            
                         else:
                             x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask) #Zoe Added AdjMatrix ", adjMat_data"
+
+                        if self.params['MMD_USE']:
+                            loss, bce,MMD_loss,prop_mse = self.loss_func(src, x_out, mu, logvar,
+                                                                    true_prop, pred_prop,
+                                                                    self.params['CHAR_WEIGHTS'],
+                                                                    beta,
+                                                                    MMD_use=True,
+                                                                    latent_size=self.params['LATENT_SIZE'],
+                                                                    device=self.device)
+                            kld=torch.tensor(0.)
+                            beta_kld=torch.tensor(0.)
+                        else:
                             loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
-                                                                  true_prop, pred_prop,
-                                                                  self.params['CHAR_WEIGHTS'],
-                                                                  beta)
+                                                                    true_prop, pred_prop,
+                                                                    self.params['CHAR_WEIGHTS'],
+                                                                    beta)
+                            MMD_loss=torch.tensor(0.)
+
                         #acc = self.perfect_recon_acc(src, x_out, self.tgt_len, self.params["CHAR_DICT"], self.params['ORG_DICT'])
                         acc=0
+
                     avg_losses.append(loss.item())
                     avg_bce_losses.append(bce.item())
                     avg_kld_losses.append(kld.item())
                     avg_beta_kld_losses.append(beta_kld.item())
+                    avg_MMD_losses.append(MMD_loss.item())
                     avg_prop_mse_losses.append(prop_mse.item())
                     avg_perf_recon_accs.append(acc)
                 stop_run_time = perf_counter()
                 run_time = round(stop_run_time - start_run_time, 5)
                 avg_loss = np.mean(avg_losses)
                 avg_bce = np.mean(avg_bce_losses)
+                avg_MMD=np.mean(avg_MMD_losses)
                 if len(avg_bcemask_losses) == 0:
                     avg_bcemask = 0
                 else:
@@ -406,6 +435,7 @@ class VAEShell():
                                                                 avg_bcemask,
                                                                 avg_kld,
                                                                 avg_beta_kld,
+                                                                 avg_MMD,
                                                                 avg_prop_mse,
                                                                 avg_perf_recon_acc,
                                                                 run_time))
@@ -413,7 +443,12 @@ class VAEShell():
 
             self.n_epochs += 1
             val_loss = np.mean(losses)
-            print('Epoch - {} Train - {} Val - {} KLBeta - {}'.format(self.n_epochs, train_loss, val_loss, beta))
+            if self.params['MMD_USE']:
+                print('Epoch - {} Train - {} Val - {}'.format(self.n_epochs, train_loss, val_loss))
+            else:
+                print('Epoch - {} Train - {} Val - {} KLBeta - {}'.format(self.n_epochs, train_loss, val_loss, beta))
+
+            
 
             ### Update current state and save model
             self.current_state['epoch'] = self.n_epochs
