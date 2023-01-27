@@ -50,18 +50,3 @@ def vae_data_gen(mols, props, char_dict, padded_len, use_adj=False, adj_weight=0
             encoded_data[j,:-1] = torch.tensor(encoded_selfie)
             encoded_data[j,-1] = torch.tensor(props[j])
     return encoded_data
-
-def make_std_mask(tgt, pad):
-    """
-    Creates sequential mask matrix for target input (adapted from
-    http://nlp.seas.harvard.edu/2018/04/03/attention.html)
-
-    Arguments:
-        tgt (torch.tensor, req): Target vector of token ids
-        pad (int, req): Padding token id
-    Returns:
-        tgt_mask (torch.tensor): Sequential target mask
-    """
-    tgt_mask = (tgt != pad).unsqueeze(-2)
-    tgt_mask = tgt_mask & Variable(subsequent_mask(tgt.size(-1)).type_as(tgt_mask.data))
-    return tgt_mask

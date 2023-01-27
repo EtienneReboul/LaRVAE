@@ -8,7 +8,7 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 if __name__ == '__main__':
     sys.path.append(os.path.join(script_dir, '..'))
 
-from transvae.trans_models import TransVAE
+
 from transvae.rnn_models import RNN, RNNAttn
 from transvae.tvae_util import calc_entropy
 from scripts1.parsers1 import sample_parser

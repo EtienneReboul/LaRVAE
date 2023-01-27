@@ -97,12 +97,8 @@ def train(args):
 
     ### Train model
     vae = model_init(args, params)
-    #print(vae)
-    #summary(vae, (1, 61, 26))
     if args.checkpoint is not None:
         vae.load(args.checkpoint)
-    #model = vae()
-    #summary(model, (1, 61, 128))
     vae.train(train_mols, test_mols, train_props, test_props,
               epochs=args.epochs, save_freq=args.save_freq) #end_beta_scale=args.end_beta_scale
 
@@ -110,4 +106,5 @@ def train(args):
 if __name__ == '__main__':
     parser = train_parser()
     args = parser.parse_args()
+    d_args = vars(args)
     train(args)
