@@ -1,0 +1,13 @@
+{'BATCH_SIZE': 500, 'BATCH_CHUNKS': 5, 'BETA_INIT': 1e-08, 'BETA': 0.05, 'ANNEAL_START': 0, 'LR_SCALE': 1, 'WARMUP_STEPS': 10000, 'EPS_SCALE': 1, 'ADAM_LR': 0.0003, 'model_type': 'rnn_attn', 'N': 3, 'd_model': 128, 'd_latent': 128, 'dropout': 0.1, 'teacher_force': True, 'bypass_attention': False, 'bypass_bottleneck': False, 'property_predictor': False, 'd_pp': 256, 'depth_pp': 2, 'ADJ_MAT': True, 'ADJ_WEIGHT': 0.3, 'CHAR_WEIGHTS': tensor([0.5154, 0.6595, 0.5912, 0.6103, 0.5557, 0.7450, 0.6387, 0.6297, 0.6139,
+        0.5678, 0.7016, 0.5836, 0.7419, 0.6692, 0.5846, 0.6486, 0.6882, 0.7254,
+        0.6825, 0.8034, 0.7360, 0.8361, 1.0000, 0.1000, 0.6212],
+       device='cuda:0'), 'CHAR_DICT': {'<start>': 0, '[C]': 1, '[S]': 2, '[=Branch1]': 3, '[=O]': 4, '[=C]': 5, '[NH1]': 6, '[Branch2]': 7, '[=N]': 8, '[O]': 9, '[Ring1]': 10, '[#Branch2]': 11, '[Branch1]': 12, '[Cl]': 13, '[#Branch1]': 14, '[N]': 15, '[Ring2]': 16, '[=Branch2]': 17, '[#C]': 18, '[F]': 19, '[#N]': 20, '[P]': 21, '[Br]': 22, '[=S]': 23, '_': 24, '<end>': 25}, 'ORG_DICT': {0: '[C]', 1: '[S]', 2: '[=Branch1]', 3: '[=O]', 4: '[=C]', 5: '[NH1]', 6: '[Branch2]', 7: '[=N]', 8: '[O]', 9: '[Ring1]', 10: '[#Branch2]', 11: '[Branch1]', 12: '[Cl]', 13: '[#Branch1]', 14: '[N]', 15: '[Ring2]', 16: '[=Branch2]', 17: '[#C]', 18: '[F]', 19: '[#N]', 20: '[P]', 21: '[Br]', 22: '[=S]', 23: '_', 24: '<end>'}}
+Perfect Reconstruction Rate (w/o teacher forcing): 0.984
+Average Perfect Prefix Length: 25.375
+Sampled 120000 latent vectors...
+Validity Rate: 0.99915
+Stability Rate: 0.26913333333333334
+Average Token Loss: 11.98121122471776
+Average length of selfie: 24.845666666666666
+Covariance Matrix of Latent Dimensions saved 
+Entropy of Latent Dimensions saved
