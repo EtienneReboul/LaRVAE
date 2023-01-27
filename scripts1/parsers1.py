@@ -72,9 +72,10 @@ def train_parser():
     parser.add_argument('--save_name', default=None, type=str)
     parser.add_argument('--save_freq', default=5, type=int)
     ### Adjacency Matrix Parameters
-    #parser.add_argument('--adj_matrix', default=False, type=bool)
     parser.add_argument('--adj_matrix', default=False, action='store_true')
     parser.add_argument('--adj_weight', default=0.3, type=float)
+    ### MMD Parameter
+    parser.add_argument('--mmd_use', default=False, action='store_true')
 
     return parser
 

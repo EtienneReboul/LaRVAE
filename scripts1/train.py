@@ -44,7 +44,9 @@ def train(args):
               'LR_SCALE': args.lr_scale,
               'WARMUP_STEPS': args.warmup_steps,
               'ADJ_MAT': args.adj_matrix,
-              'ADJ_WEIGHT': args.adj_weight}
+              'ADJ_WEIGHT': args.adj_weight,
+              'MMD_USE':args.mmd_use,
+              'LATENT_SIZE':args.d_latent}
 
     ### Load data, vocab and token weights
     if args.data_source == 'custom':
