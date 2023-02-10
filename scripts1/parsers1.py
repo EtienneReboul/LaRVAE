@@ -2,19 +2,16 @@ import argparse
 from email.policy import default
 from transvae.rnn_models import RNNAttn
 
-def model_init(args, params={}):
+def model_init(args):
     ### Model Name
-    if args.save_name is None:
-        save_name = '{}-{}_{}'.format(args.model,
-                                          args.d_model,
-                                          args.data_source)
-    else:
-        save_name = args.save_name
+    if args['save_name'] is None:
+        save_name = '{}-{}_{}'.format(args['model'],
+                                          args['d_model'],
+                                          args['data_source'])
+        args['save_name']=save_name 
 
     ### Load Model
-    vae = RNNAttn(params=params, name=save_name, d_model=args.d_model,
-                      d_latent=args.d_latent, property_predictor=args.property_predictor,
-                      d_pp=args.d_property_predictor, depth_pp=args.depth_property_predictor)
+    vae = RNNAttn(args)
     return vae
 
 def train_parser():

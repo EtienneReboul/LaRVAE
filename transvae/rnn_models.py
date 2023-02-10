@@ -21,14 +21,12 @@ class RNNAttn(VAEShell):
     """
     RNN-based VAE class with attention.
     """
-    def __init__(self, params={}, name=None, N=3, d_model=128,
-                 d_latent=128, dropout=0.1, tf=True,
+    def __init__(self, params, N=3, dropout=0.1, tf=True,
                  bypass_attention=False,
                  bypass_bottleneck=False,
-                 property_predictor=False,
                  d_pp=256, depth_pp=2,
                  load_fn=None):
-        super().__init__(params, name)
+        super().__init__(params)
         """
         Instatiating a GruaVAE object builds the model architecture, data structs
         to store the model parameters and training information and initiates model
@@ -54,13 +52,10 @@ class RNNAttn(VAEShell):
         self.model_type = 'rnn_attn'
         self.params['model_type'] = self.model_type
         self.params['N'] = N
-        self.params['d_model'] = d_model
-        self.params['d_latent'] = d_latent
         self.params['dropout'] = dropout
         self.params['teacher_force'] = tf
         self.params['bypass_attention'] = bypass_attention
         self.params['bypass_bottleneck'] = bypass_bottleneck
-        self.params['property_predictor'] = property_predictor
         self.params['d_pp'] = d_pp
         self.params['depth_pp'] = depth_pp
         self.arch_params = ['N', 'd_model', 'd_latent', 'dropout', 'teacher_force',

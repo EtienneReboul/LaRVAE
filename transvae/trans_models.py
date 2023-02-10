@@ -27,33 +27,33 @@ class VAEShell():
     VAE shell class that includes methods for parameter initiation,
     data loading, training, logging, checkpointing, loading and saving,
     """
-    def __init__(self, params, name=None):
+    def __init__(self, params):
         self.params = params
-        self.name = name
-        if 'BATCH_SIZE' not in self.params.keys():
+        self.name = params['save_name']
+        if 'batch_size' not in self.params.keys():
             print("done")
-            self.params['BATCH_SIZE'] = 500
-        if 'BATCH_CHUNKS' not in self.params.keys():
-            self.params['BATCH_CHUNKS'] = 5
-        if 'BETA_INIT' not in self.params.keys():
-            self.params['BETA_INIT'] = 1e-8
-        if 'BETA' not in self.params.keys():
-            self.params['BETA'] = 0.05
-        if 'ANNEAL_START' not in self.params.keys():
-            self.params['ANNEAL_START'] = 0
-        if 'LR' not in self.params.keys():
-            self.params['LR_SCALE'] = 1
-        if 'WARMUP_STEPS' not in self.params.keys():
-            self.params['WARMUP_STEPS'] = 10000
-        if 'EPS_SCALE' not in self.params.keys():
-            self.params['EPS_SCALE'] = 1
-        if 'CHAR_DICT' in self.params.keys():
-            self.vocab_size = len(self.params['CHAR_DICT'].keys())
-            self.pad_idx = self.params['CHAR_DICT']['_']
-            if 'CHAR_WEIGHTS' in self.params.keys():
-                self.params['CHAR_WEIGHTS'] = torch.tensor(self.params['CHAR_WEIGHTS'], dtype=torch.float)
+            self.params['batch_size'] = 500
+        if 'batch_chunks' not in self.params.keys():
+            self.params['batch_chunks'] = 5
+        if 'beta_init' not in self.params.keys():
+            self.params['beta_init'] = 1e-8
+        if 'beta' not in self.params.keys():
+            self.params['beta'] = 0.05
+        if 'anneal_start' not in self.params.keys():
+            self.params['anneal_start'] = 0
+        if 'lr_scale' not in self.params.keys():
+            self.params['lr_scale'] = 1
+        if 'warmup_steps' not in self.params.keys():
+            self.params['warmup_steps'] = 10000
+        if 'eps_scale' not in self.params.keys():
+            self.params['eps_scale'] = 1
+        if 'char_dict' in self.params.keys():
+            self.vocab_size = len(self.params['char_dict'].keys())
+            self.pad_idx = self.params['char_dict']['_']
+            if 'char_weights' in self.params.keys():
+                self.params['char_weights'] = torch.tensor(self.params['char_weights'], dtype=torch.float)
             else:
-                self.params['CHAR_WEIGHTS'] = torch.ones(self.vocab_size, dtype=torch.float)
+                self.params['char_weights'] = torch.ones(self.vocab_size, dtype=torch.float)
         self.loss_func = vae_loss
         self.data_gen = vae_data_gen
 
@@ -123,8 +123,8 @@ class VAEShell():
                 self.params[k] = v
             else:
                 pass
-        self.vocab_size = len(self.params['CHAR_DICT'].keys())
-        self.pad_idx = self.params['CHAR_DICT']['_']
+        self.vocab_size = len(self.params['char_dict'].keys())
+        self.pad_idx = self.params['char_dict']['_']
         self.build_model()
         self.model.load_state_dict(self.current_state['model_state_dict'])
         self.optimizer.load_state_dict(self.current_state['optimizer_state_dict'])
@@ -157,19 +157,19 @@ class VAEShell():
         #train_data = dataloader.VAE_Dataset(train_mols, train_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
         #val_data = dataloader.VAE_Dataset(val_mols, val_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
 
-        train_data = self.data_gen(train_mols, train_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
-        val_data = self.data_gen(val_mols, val_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
+        train_data = self.data_gen(train_mols, train_props, self.params['char_dict'], self.src_len, self.params['adj_matrix'], self.params['adj_weight'])
+        val_data = self.data_gen(val_mols, val_props, self.params['char_dict'], self.src_len, self.params['adj_matrix'], self.params['adj_weight'])
 
 
         train_iter = torch.utils.data.DataLoader(train_data,
-                                                 batch_size=self.params['BATCH_SIZE'],
+                                                 batch_size=self.params['batch_size'],
                                                  shuffle=True, num_workers=0,
                                                  pin_memory=False, drop_last=True)
         val_iter = torch.utils.data.DataLoader(val_data,
-                                               batch_size=self.params['BATCH_SIZE'],
+                                               batch_size=self.params['batch_size'],
                                                shuffle=True, num_workers=0,
                                                pin_memory=False, drop_last=True)
-        self.chunk_size = self.params['BATCH_SIZE'] // self.params['BATCH_CHUNKS']
+        self.chunk_size = self.params['batch_size'] // self.params['batch_chunks']
 
 
         torch.backends.cudnn.benchmark = True
@@ -200,8 +200,8 @@ class VAEShell():
         # writer = SummaryWriter(tensorboard_dir)
 
         ### Initialize Annealer
-        kl_annealer = KLAnnealer(self.params['BETA_INIT'], self.params['BETA'], 
-                                    40, self.params['ANNEAL_START'])#stop increasing beta at 40 epochs
+        kl_annealer = KLAnnealer(self.params['beta_init'], self.params['beta'], 
+                                    40, self.params['anneal_start'])#stop increasing beta at 40 epochs
 
         #print("stop increasing beta at 10 epochs")
         ### Epoch loop
@@ -222,11 +222,11 @@ class VAEShell():
                 avg_prop_mse_losses = []
                 avg_perf_recon_accs = []
                 start_run_time = perf_counter()
-                for i in range(self.params['BATCH_CHUNKS']):
+                for i in range(self.params['batch_chunks']):
                     input_len = self.src_len+1 #input length including padding and start token
                     batch_data = data[i*self.chunk_size:(i+1)*self.chunk_size,:]
                     mols_data = batch_data[:,:input_len] #changed by zoe
-                    if self.params['ADJ_MAT']:
+                    if self.params['adj_matrix']:
                         adjMat_data = batch_data[:, input_len:-1] #added by zoe
                         adjMat_data = torch.reshape(adjMat_data, (self.chunk_size, input_len, input_len))
                     else:
@@ -235,7 +235,7 @@ class VAEShell():
                     if self.use_gpu:
                         mols_data = mols_data.cuda()
                         props_data = props_data.cuda()
-                        if self.params['ADJ_MAT']:
+                        if self.params['adj_matrix']:
                             adjMat_data = adjMat_data.cuda()
 
                     src = Variable(mols_data).long()
@@ -243,26 +243,26 @@ class VAEShell():
                     true_prop = Variable(props_data)
 
                     
-                    if self.params['ADJ_MAT']:
+                    if self.params['adj_matrix']:
                         x_out, mu, logvar, pred_prop = self.model(src, tgt, adjMat_data) #Zoe Added AdjMatrix ", adjMat_data"
                         
                     else:
                         x_out, mu, logvar, pred_prop = self.model(src, tgt) #Zoe Added AdjMatrix ", adjMat_data"
 
-                    if self.params['MMD_USE']:
+                    if self.params['mmd_use']:
                         loss, bce,MMD_loss,prop_mse = self.loss_func(src, x_out, mu, logvar,
                                                                 true_prop, pred_prop,
-                                                                self.params['CHAR_WEIGHTS'],
+                                                                self.params['char_weights'],
                                                                 beta,
                                                                 MMD_use=True,
-                                                                latent_size=self.params['LATENT_SIZE'],
+                                                                latent_size=self.params['latent_size'],
                                                                 device=self.device)
                         kld=torch.tensor(0.)
                         beta_kld=torch.tensor(0.)
                     else:
                         loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
                                                                 true_prop, pred_prop,
-                                                                self.params['CHAR_WEIGHTS'],
+                                                                self.params['char_weights'],
                                                                 beta)
                         MMD_loss=torch.tensor(0.)
 
@@ -325,11 +325,11 @@ class VAEShell():
                 avg_prop_mse_losses = []
                 avg_perf_recon_accs = []
                 start_run_time = perf_counter()
-                for i in range(self.params['BATCH_CHUNKS']):
+                for i in range(self.params['batch_chunks']):
                     input_len = self.src_len+1 #input length including padding and start token
                     batch_data = data[i*self.chunk_size:(i+1)*self.chunk_size,:]
                     mols_data = batch_data[:,:input_len] #changed by zoe
-                    if self.params['ADJ_MAT']:
+                    if self.params['adj_matrix']:
                         adjMat_data = batch_data[:, input_len:-1] #added by zoe
                         adjMat_data = torch.reshape(adjMat_data, (self.chunk_size, input_len, input_len))
                     else:
@@ -337,7 +337,7 @@ class VAEShell():
                     if self.use_gpu:
                         mols_data = mols_data.cuda()
                         props_data = props_data.cuda()
-                        if self.params['ADJ_MAT']:
+                        if self.params['adj_matrix']:
                             adjMat_data = adjMat_data.cuda()
 
                     src = Variable(mols_data).long()
@@ -345,26 +345,26 @@ class VAEShell():
                     true_prop = Variable(props_data)
                     scores = Variable(data[:,-1])
 
-                    if self.params['ADJ_MAT']:
+                    if self.params['adj_matrix']:
                         x_out, mu, logvar, pred_prop = self.model(src, tgt, adjMat_data) #Zoe Added AdjMatrix ", adjMat_data"
                         
                     else:
                         x_out, mu, logvar, pred_prop = self.model(src, tgt) #Zoe
 
-                    if self.params['MMD_USE']:
+                    if self.params['mmd_use']:
                         loss, bce,MMD_loss,prop_mse = self.loss_func(src, x_out, mu, logvar,
                                                                 true_prop, pred_prop,
-                                                                self.params['CHAR_WEIGHTS'],
+                                                                self.params['char_weights'],
                                                                 beta,
                                                                 MMD_use=True,
-                                                                latent_size=self.params['LATENT_SIZE'],
+                                                                latent_size=self.params['latent_size'],
                                                                 device=self.device)
                         kld=torch.tensor(0.)
                         beta_kld=torch.tensor(0.)
                     else:
                         loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
                                                                 true_prop, pred_prop,
-                                                                self.params['CHAR_WEIGHTS'],
+                                                                self.params['char_weights'],
                                                                 beta)
                         MMD_loss=torch.tensor(0.)
 
@@ -405,7 +405,7 @@ class VAEShell():
 
             self.n_epochs += 1
             val_loss = np.mean(losses)
-            if self.params['MMD_USE']:
+            if self.params['mmd_use']:
                 print('Epoch - {} Train - {} Val - {}'.format(self.n_epochs, train_loss, val_loss))
             else:
                 print('Epoch - {} Train - {} Val - {} KLBeta - {}'.format(self.n_epochs, train_loss, val_loss, beta))
@@ -473,11 +473,11 @@ class VAEShell():
         """
         torch.cuda.empty_cache()
 
-        start_symbol = self.params['CHAR_DICT']['<start>']
+        start_symbol = self.params['char_dict']['<start>']
         max_len = self.tgt_len
         decoded = torch.ones(mem.shape[0],1).fill_(start_symbol).long()
         for tok in condition:
-            condition_symbol = self.params['CHAR_DICT'][tok]
+            condition_symbol = self.params['char_dict'][tok]
             condition_vec = torch.ones(mem.shape[0],1).fill_(condition_symbol).long()
             decoded = torch.cat([decoded, condition_vec], dim=1)
         tgt = torch.ones(mem.shape[0],max_len+2).fill_(start_symbol).long() #add start token for teacher forcing
@@ -542,15 +542,15 @@ class VAEShell():
                                    token ids
             mems (np.array): Array of model memory vectors
         """
-        data = vae_data_gen(mols, None, self.params['CHAR_DICT'], self.src_len, use_adj=self.params["ADJ_MAT"], adj_weight=self.params["ADJ_WEIGHT"])
+        data = vae_data_gen(mols, None, self.params['char_dict'], self.src_len, use_adj=self.params["adj_matrix"], adj_weight=self.params["adj_weight"])
         #data = dataloader.VAE_Dataset(data, None, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
 
         data_iter = torch.utils.data.DataLoader(data,
-                                                batch_size=self.params['BATCH_SIZE'],
+                                                batch_size=self.params['batch_size'],
                                                 shuffle=False,num_workers=0,
                                                 pin_memory=False, drop_last=True)
-        self.batch_size = self.params['BATCH_SIZE']
-        self.chunk_size = self.batch_size // self.params['BATCH_CHUNKS']
+        self.batch_size = self.params['batch_size']
+        self.chunk_size = self.batch_size // self.params['batch_chunks']
 
         input_len = self.src_len+1 #added by Zoe
 
@@ -562,10 +562,10 @@ class VAEShell():
                 log_file = open('calcs/{}_progress.txt'.format(self.name), 'a')
                 log_file.write('{}\n'.format(j))
                 log_file.close()
-            for i in range(self.params['BATCH_CHUNKS']):
+            for i in range(self.params['batch_chunks']):
                 batch_data = data[i*self.chunk_size:(i+1)*self.chunk_size,:]
                 mols_data = batch_data[:,:input_len] #changed by zoe
-                if self.params['ADJ_MAT']:
+                if self.params['adj_matrix']:
                     adjMat_data = batch_data[:, input_len:-1] #added by zoe
                     adjMat_data = torch.reshape(adjMat_data, (self.chunk_size, input_len, input_len))
                 else:
@@ -574,7 +574,7 @@ class VAEShell():
                 if self.use_gpu:
                     mols_data = mols_data.cuda()
                     props_data = props_data.cuda()
-                    if self.params['ADJ_MAT']:
+                    if self.params['adj_matrix']:
                         adjMat_data = adjMat_data.cuda()
 
 
@@ -594,7 +594,7 @@ class VAEShell():
                     decoded = None
 
                 if return_str:
-                    decoded = decode_mols(decoded, self.params['ORG_DICT'])
+                    decoded = decode_mols(decoded, self.params['org_dict'])
                     decoded_smiles += decoded
                 else:
                     decoded_smiles.append(decoded)
@@ -638,7 +638,7 @@ class VAEShell():
             decoded = None
 
         if return_str:
-            decoded = decode_mols(decoded, self.params['ORG_DICT'])
+            decoded = decode_mols(decoded, self.params['org_dict'])
         return decoded
 
     def calc_mems(self, data, log=True, save_dir='memory', save_fn='model_name', save=True):
@@ -657,14 +657,14 @@ class VAEShell():
             logvars(np.array): Log variance array (prior to reparameterization)
         """
 
-        data = self.data_gen(data, None, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
+        data = self.data_gen(data, None, self.params['char_dict'], self.src_len, self.params['adj_matrix'], self.params['adj_weight'])
         data_iter = torch.utils.data.DataLoader(data,
-                                                batch_size=self.params['BATCH_SIZE'],
+                                                batch_size=self.params['batch_size'],
                                                 shuffle=False, num_workers=0,
                                                 pin_memory=False, drop_last=True)
-        save_shape = len(data_iter)*self.params['BATCH_SIZE']
-        self.batch_size = self.params['BATCH_SIZE']
-        self.chunk_size = self.batch_size // self.params['BATCH_CHUNKS']
+        save_shape = len(data_iter)*self.params['batch_size']
+        self.batch_size = self.params['batch_size']
+        self.chunk_size = self.batch_size // self.params['batch_chunks']
         mems = torch.empty((save_shape, self.params['d_latent'])).cpu()
         mus = torch.empty((save_shape, self.params['d_latent'])).cpu()
         logvars = torch.empty((save_shape, self.params['d_latent'])).cpu()
@@ -675,11 +675,11 @@ class VAEShell():
                 log_file = open('memory/{}_progress.txt'.format(self.name), 'a')
                 log_file.write('{}\n'.format(j))
                 log_file.close()
-            for i in range(self.params['BATCH_CHUNKS']):
+            for i in range(self.params['batch_chunks']):
                 input_len = self.src_len+1 #input length including padding and start token
                 batch_data = data[i*self.chunk_size:(i+1)*self.chunk_size,:]
                 mols_data = batch_data[:,:input_len] #changed by zoe
-                if self.params['ADJ_MAT']:
+                if self.params['adj_matrix']:
                     adjMat_data = batch_data[:, input_len:-1] #added by zoe
                     adjMat_data = torch.reshape(adjMat_data, (self.chunk_size, input_len, input_len))
                 else:
@@ -688,7 +688,7 @@ class VAEShell():
                 if self.use_gpu:
                     mols_data = mols_data.cuda()
                     props_data = props_data.cuda()
-                    if self.params['ADJ_MAT']:
+                    if self.params['adj_matrix']:
                         adjMat_data = adjMat_data.cuda()
 
                 src = Variable(mols_data).long()

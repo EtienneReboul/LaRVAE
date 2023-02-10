@@ -141,6 +141,7 @@ def get_char_weights(train_smiles, params, freq_penalty=0.5):
             char_dist[char] += 1
         for j in range(i, params['MAX_LENGTH']):
             char_dist['_'] += 1
+    print(char_dist)
     for i, v in enumerate(char_dist.values()):
         char_counts[i] = v
     top = np.sum(np.log(char_counts))
@@ -153,6 +154,8 @@ def get_char_weights(train_smiles, params, freq_penalty=0.5):
     scaler = MinMaxScaler([freq_penalty,1.0])
     char_weights = scaler.fit_transform(char_weights.reshape(-1, 1))
     return char_weights[:,0]
+
+#def get_char_weights_new(train_selfies, params, freq_penalty=0.5):
 
 
 ####### POSTPROCESSING HELPERS ##########
