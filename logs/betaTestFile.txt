@@ -1,0 +1,1 @@
+end_beta_scale is 20

@@ -8,4 +8,4 @@
 #SBATCH --cpus-per-task=20
 #SBATCH --gres=gpu:1
 module restore LaRVAE_py_3810
-python validity.py --model checkpoints/050_50_00_AdjVAE_lat55.ckpt --data data/moses_test.txt --num_samples 30000 --log_name 50_vae_00_lat55
+python validity.py --model checkpoints/050_50_00_AdjVAE_lat55.ckpt --data data/moses_test.txt --log_name 50_vae_00_lat55

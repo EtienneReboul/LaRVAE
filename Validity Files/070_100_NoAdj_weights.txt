@@ -1,0 +1,13 @@
+{'save_name': None, 'batch_size': 500, 'batch_chunks': 5, 'beta_init': 1e-08, 'beta': 0.05, 'anneal_start': 0, 'lr_scale': 1, 'warmup_steps': 10000, 'eps_scale': 1, 'ADAM_LR': 0.0003, 'model_type': 'rnn_attn', 'N': 3, 'dropout': 0.1, 'teacher_force': True, 'bypass_attention': False, 'bypass_bottleneck': False, 'd_pp': 256, 'depth_pp': 2, 'model': 'rnnattn', 'd_model': 128, 'd_feedforward': 128, 'd_latent': 28, 'property_predictor': False, 'd_property_predictor': 256, 'depth_property_predictor': 2, 'adam_lr': 0.0003, 'epochs': 100, 'data_source': 'custom', 'train_mols_path': 'data/moses_train.txt', 'test_mols_path': 'data/moses_test.txt', 'train_props_path': None, 'test_props_path': None, 'vocab_path': 'data/moses_char_dict.pkl', 'char_weights_path': 'data/moses_char_weights.npy', 'checkpoint': None, 'save_freq': 5, 'adj_matrix': False, 'adj_weight': 0.3, 'mmd_use': False, 'char_weights': tensor([0.5154, 0.6595, 0.5912, 0.6103, 0.5557, 0.7450, 0.6387, 0.6297, 0.6139,
+        0.5678, 0.7016, 0.5836, 0.7419, 0.6692, 0.5846, 0.6486, 0.6882, 0.7254,
+        0.6825, 0.8034, 0.7360, 0.8361, 1.0000, 0.1000, 0.6212],
+       device='cuda:0'), 'char_dict': {'<start>': 0, '[C]': 1, '[S]': 2, '[=Branch1]': 3, '[=O]': 4, '[=C]': 5, '[NH1]': 6, '[Branch2]': 7, '[=N]': 8, '[O]': 9, '[Ring1]': 10, '[#Branch2]': 11, '[Branch1]': 12, '[Cl]': 13, '[#Branch1]': 14, '[N]': 15, '[Ring2]': 16, '[=Branch2]': 17, '[#C]': 18, '[F]': 19, '[#N]': 20, '[P]': 21, '[Br]': 22, '[=S]': 23, '_': 24, '<end>': 25}, 'org_dict': {0: '[C]', 1: '[S]', 2: '[=Branch1]', 3: '[=O]', 4: '[=C]', 5: '[NH1]', 6: '[Branch2]', 7: '[=N]', 8: '[O]', 9: '[Ring1]', 10: '[#Branch2]', 11: '[Branch1]', 12: '[Cl]', 13: '[#Branch1]', 14: '[N]', 15: '[Ring2]', 16: '[=Branch2]', 17: '[#C]', 18: '[F]', 19: '[#N]', 20: '[P]', 21: '[Br]', 22: '[=S]', 23: '_', 24: '<end>'}}
+Perfect Reconstruction Rate (w/o teacher forcing): 0.976
+Average Perfect Prefix Length: 20.906346153846155
+Sampled 120000 latent vectors...
+Validity Rate: 0.9998750000000001
+Stability Rate: 0.3745583333333333
+Average Token Loss: 5.2681573809050235
+Average length of selfie: 34.67995833333333
+Covariance Matrix of Latent Dimensions saved 
+Entropy of Latent Dimensions saved

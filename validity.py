@@ -110,23 +110,9 @@ def latentCovariance(mems, log_name):
     entropies = calc_entropy(mems)
     entropies = np.sort(entropies)
 
-    #save plot of covariance matrix
-    sns.set(rc = {'figure.figsize':(23,20)})
-    cov_plot = sns.heatmap(cov_mat, annot=False)
-    fig = cov_plot.get_figure()
-    fig.savefig("analysis/" + cov_name) 
-
-    #save plot of entropy
-    fig = plt.figure(figsize=(12,6))
-    plt.bar(range(len(entropies)), entropies)
-    plt.xlabel('Latent Dimension')
-    plt.ylabel('Entropy (bits)')
-    fig.savefig("analysis/" + entropy_name)
-
     #save csv file
     pd.DataFrame(cov_mat).to_csv("analysis/" + cov_name  + ".csv")
     pd.DataFrame(entropies).to_csv("analysis/" + entropy_name  + ".csv")
-    return cov_mat
     
 
 
@@ -153,9 +139,9 @@ with torch.no_grad():
         subset_data = random.sample(list(test_data), 1000)
         subset_data = np.array(subset_data)
         reconstructed_mols = vae.reconstruct(subset_data, log=False, return_mems=False)
-        reconstructed_mols = vae.reconstruct(test_data[0:500], log=False, return_mems=False)
+        #reconstructed_mols = vae.reconstruct(test_data[0:500], log=False, return_mems=False)
         perfect_recon_rate, perf_prefix_len = recon_rate(reconstructed_mols, subset_data)
-        perfect_recon_rate, perf_prefix_len = recon_rate(reconstructed_mols, test_data[0:500])
+        #perfect_recon_rate, perf_prefix_len = recon_rate(reconstructed_mols, test_data[0:500])
         perfect_recon_rates.append(perfect_recon_rate)
         perf_prefix_lens.append(perf_prefix_len)
         del(subset_data)
@@ -194,15 +180,14 @@ with torch.no_grad():
     log_file.write("\nAverage Token Loss: " + str(total_token_loss))
     log_file.write("\nAverage length of selfie: " + str(total_avg_len))
 
-    density_name = log_name + "_tokenDensity"
-    density_plot = sns.displot(token_density,kind="kde").set(title='Token Loss Density')
-    density_plot.set(xlabel='Token Loss', ylabel='Probability')
-    density_plot.savefig("analysis/" + density_name)
+    pd.DataFrame(pd.DataFrame(token_density)).to_csv("analysis/" + log_name + "_token_density.csv")
+    log_file.write("\nToken lossses saved ")
 
     _, mems, _ = vae.calc_mems(test_data, log=False, save=False)
 
-    cov_mat = latentCovariance(mems, log_name)
+    latentCovariance(mems, log_name)
     del(mems)
+    
     log_file.write("\nCovariance Matrix of Latent Dimensions saved ")
     log_file.write("\nEntropy of Latent Dimensions saved")
 

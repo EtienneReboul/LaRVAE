@@ -1,43 +1,23 @@
 import argparse
 from email.policy import default
-from transvae.trans_models import TransVAE
-from transvae.rnn_models import RNN, RNNAttn
+from transvae.rnn_models import RNNAttn
 
-def model_init(args, params={}):
+def model_init(args):
     ### Model Name
-    if args.save_name is None:
-        if args.model == 'transvae':
-            save_name = 'trans{}x-{}_{}'.format(args.d_feedforward // args.d_model,
-                                                args.d_model,
-                                                args.data_source)
-        else:
-            save_name = '{}-{}_{}'.format(args.model,
-                                          args.d_model,
-                                          args.data_source)
-    else:
-        save_name = args.save_name
+    if args['save_name'] is None:
+        save_name = '{}-{}_{}'.format(args['model'],
+                                          args['d_model'],
+                                          args['data_source'])
+        args['save_name']=save_name 
 
     ### Load Model
-    if args.model == 'transvae':
-        vae = TransVAE(params=params, name=save_name, d_model=args.d_model,
-                       d_ff=args.d_feedforward, d_latent=args.d_latent,
-                       property_predictor=args.property_predictor, d_pp=args.d_property_predictor,
-                       depth_pp=args.depth_property_predictor)
-    elif args.model == 'rnnattn':
-        vae = RNNAttn(params=params, name=save_name, d_model=args.d_model,
-                      d_latent=args.d_latent, property_predictor=args.property_predictor,
-                      d_pp=args.d_property_predictor, depth_pp=args.depth_property_predictor)
-    elif args.model == 'rnn':
-        vae = RNN(params=params, name=save_name, d_model=args.d_model,
-                  d_latent=args.d_latent, property_predictor=args.property_predictor,
-                  d_pp=args.d_property_predictor, depth_pp=args.depth_property_predictor)
-
+    vae = RNNAttn(args)
     return vae
 
 def train_parser():
     parser = argparse.ArgumentParser()
     ### Architecture Parameters
-    parser.add_argument('--model', choices=['transvae', 'rnnattn', 'rnn'],
+    parser.add_argument('--model', choices=['rnnattn'],
                         required=True, type=str)
     parser.add_argument('--d_model', default=128, type=int)
     parser.add_argument('--d_feedforward', default=128, type=int)
@@ -87,7 +67,7 @@ def sample_parser():
     parser.add_argument('--cores', default=10, type=int)
 
     ### Load Files
-    parser.add_argument('--model', choices=['transvae', 'rnnattn', 'rnn'],
+    parser.add_argument('--model', choices=['rnnattn'],
                         required=True, type=str)
     parser.add_argument('--model_ckpt', required=True, type=str)
     parser.add_argument('--mols', default=None, type=str)
@@ -113,7 +93,7 @@ def sample_parser():
 def attn_parser():
     parser = argparse.ArgumentParser()
     ### Load Files
-    parser.add_argument('--model', choices=['transvae', 'rnnattn'],
+    parser.add_argument('--model', choices=['rnnattn'],
                         required=True, type=str)
     parser.add_argument('--model_ckpt', required=True, type=str)
     parser.add_argument('--mols', required=True, type=str)
@@ -153,7 +133,7 @@ def slurm_master_parser():
     parser.add_argument('--prior_path', type=str, default='checkpoints/025_test.ckpt')  # the prior VAE (pretrained)
     parser.add_argument('-n', '--name', type=str, default='CbAS_vae')  # the name of the experiment
     parser.add_argument('--iters', type=int, default=2)  # Number of iterations
-    parser.add_argument('--model', choices=['transvae', 'rnnattn', 'rnn'], default='rnnattn', type=str)
+    parser.add_argument('--model', choices=['rnnattn'], default='rnnattn', type=str)
     parser.add_argument('--main_cores', type=int, default=10) # Number of cores that should be used for  Sampler and Docker
     parser.add_argument('--oracle', type=str, choices=['smina','RLDOCK'],default='smina')  # 'qed' or 'docking' or 'qsar'
     parser.add_argument('--cur_iter', type=int, default=0) #current iteration

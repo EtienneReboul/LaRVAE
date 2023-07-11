@@ -30,24 +30,6 @@ def clones(module, N):
     http://nlp.seas.harvard.edu/2018/04/03/attention.html)"""
     return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
 
-def subsequent_mask(size):
-    """Mask out subsequent positions (adapted from
-    http://nlp.seas.harvard.edu/2018/04/03/attention.html)"""
-    attn_shape = (1, size, size)
-    subsequent_mask = np.triu(np.ones(attn_shape), k=1).astype('uint8')
-    return torch.from_numpy(subsequent_mask) == 0
-
-def attention(query, key, value, mask=None, dropout=None):
-    "Compute 'Scaled Dot Product Attention' (adapted from Viswani et al.)"
-    d_k = query.size(-1)
-    scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
-    if mask is not None:
-        scores = scores.masked_fill(mask == 0, -1e9)
-    p_attn = F.softmax(scores, dim=-1)
-    if dropout is not None:
-        p_attn = dropout(p_attn)
-    return torch.matmul(p_attn, value), p_attn
-
 class ListModule(nn.Module):
     """Create single pytorch module from list of modules"""
     def __init__(self, *args):
@@ -159,6 +141,7 @@ def get_char_weights(train_smiles, params, freq_penalty=0.5):
             char_dist[char] += 1
         for j in range(i, params['MAX_LENGTH']):
             char_dist['_'] += 1
+    print(char_dist)
     for i, v in enumerate(char_dist.values()):
         char_counts[i] = v
     top = np.sum(np.log(char_counts))
@@ -171,6 +154,8 @@ def get_char_weights(train_smiles, params, freq_penalty=0.5):
     scaler = MinMaxScaler([freq_penalty,1.0])
     char_weights = scaler.fit_transform(char_weights.reshape(-1, 1))
     return char_weights[:,0]
+
+#def get_char_weights_new(train_selfies, params, freq_penalty=0.5):
 
 
 ####### POSTPROCESSING HELPERS ##########
@@ -259,8 +244,7 @@ def load_gen(path):
     return smiles
 
 def valid(smiles):
-    "Returns valid SMILES (RDKit sanitizable) from a set of\
-    SMILES strings"
+    "Returns valid SMILES (RDKit sanitizable) from a set of SMILES strings"
     valid_smiles = []
     for smi in smiles:
         mol = Chem.MolFromSmiles(smi)

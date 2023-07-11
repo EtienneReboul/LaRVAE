@@ -15,11 +15,9 @@ from torch.autograd import Variable
 
 from transvae.tvae_util import *
 from transvae.opt import NoamOpt
-from transvae.data import vae_data_gen, make_std_mask
-from transvae.loss import vae_loss, trans_vae_loss
+from transvae.data import vae_data_gen
+from transvae.loss import vae_loss
 #import dataloader
-
-
 
 
 ####### MODEL SHELL ##########
@@ -29,32 +27,33 @@ class VAEShell():
     VAE shell class that includes methods for parameter initiation,
     data loading, training, logging, checkpointing, loading and saving,
     """
-    def __init__(self, params, name=None):
+    def __init__(self, params):
         self.params = params
-        self.name = name
-        if 'BATCH_SIZE' not in self.params.keys():
-            self.params['BATCH_SIZE'] = 500
-        if 'BATCH_CHUNKS' not in self.params.keys():
-            self.params['BATCH_CHUNKS'] = 5
-        if 'BETA_INIT' not in self.params.keys():
-            self.params['BETA_INIT'] = 1e-8
-        if 'BETA' not in self.params.keys():
-            self.params['BETA'] = 0.05
-        if 'ANNEAL_START' not in self.params.keys():
-            self.params['ANNEAL_START'] = 0
-        if 'LR' not in self.params.keys():
-            self.params['LR_SCALE'] = 1
-        if 'WARMUP_STEPS' not in self.params.keys():
-            self.params['WARMUP_STEPS'] = 10000
-        if 'EPS_SCALE' not in self.params.keys():
-            self.params['EPS_SCALE'] = 1
-        if 'CHAR_DICT' in self.params.keys():
-            self.vocab_size = len(self.params['CHAR_DICT'].keys())
-            self.pad_idx = self.params['CHAR_DICT']['_']
-            if 'CHAR_WEIGHTS' in self.params.keys():
-                self.params['CHAR_WEIGHTS'] = torch.tensor(self.params['CHAR_WEIGHTS'], dtype=torch.float)
+        self.name = params['save_name']
+        if 'batch_size' not in self.params.keys():
+            print("done")
+            self.params['batch_size'] = 500
+        if 'batch_chunks' not in self.params.keys():
+            self.params['batch_chunks'] = 5
+        if 'beta_init' not in self.params.keys():
+            self.params['beta_init'] = 1e-8
+        if 'beta' not in self.params.keys():
+            self.params['beta'] = 0.05
+        if 'anneal_start' not in self.params.keys():
+            self.params['anneal_start'] = 0
+        if 'lr_scale' not in self.params.keys():
+            self.params['lr_scale'] = 1
+        if 'warmup_steps' not in self.params.keys():
+            self.params['warmup_steps'] = 10000
+        if 'eps_scale' not in self.params.keys():
+            self.params['eps_scale'] = 1
+        if 'char_dict' in self.params.keys():
+            self.vocab_size = len(self.params['char_dict'].keys())
+            self.pad_idx = self.params['char_dict']['_']
+            if 'char_weights' in self.params.keys():
+                self.params['char_weights'] = torch.tensor(self.params['char_weights'], dtype=torch.float)
             else:
-                self.params['CHAR_WEIGHTS'] = torch.ones(self.vocab_size, dtype=torch.float)
+                self.params['char_weights'] = torch.ones(self.vocab_size, dtype=torch.float)
         self.loss_func = vae_loss
         self.data_gen = vae_data_gen
 
@@ -124,8 +123,8 @@ class VAEShell():
                 self.params[k] = v
             else:
                 pass
-        self.vocab_size = len(self.params['CHAR_DICT'].keys())
-        self.pad_idx = self.params['CHAR_DICT']['_']
+        self.vocab_size = len(self.params['char_dict'].keys())
+        self.pad_idx = self.params['char_dict']['_']
         self.build_model()
         self.model.load_state_dict(self.current_state['model_state_dict'])
         self.optimizer.load_state_dict(self.current_state['optimizer_state_dict'])
@@ -158,19 +157,19 @@ class VAEShell():
         #train_data = dataloader.VAE_Dataset(train_mols, train_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
         #val_data = dataloader.VAE_Dataset(val_mols, val_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
 
-        train_data = self.data_gen(train_mols, train_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
-        val_data = self.data_gen(val_mols, val_props, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
+        train_data = self.data_gen(train_mols, train_props, self.params['char_dict'], self.src_len, self.params['adj_matrix'], self.params['adj_weight'])
+        val_data = self.data_gen(val_mols, val_props, self.params['char_dict'], self.src_len, self.params['adj_matrix'], self.params['adj_weight'])
 
 
         train_iter = torch.utils.data.DataLoader(train_data,
-                                                 batch_size=self.params['BATCH_SIZE'],
+                                                 batch_size=self.params['batch_size'],
                                                  shuffle=True, num_workers=0,
                                                  pin_memory=False, drop_last=True)
         val_iter = torch.utils.data.DataLoader(val_data,
-                                               batch_size=self.params['BATCH_SIZE'],
+                                               batch_size=self.params['batch_size'],
                                                shuffle=True, num_workers=0,
                                                pin_memory=False, drop_last=True)
-        self.chunk_size = self.params['BATCH_SIZE'] // self.params['BATCH_CHUNKS']
+        self.chunk_size = self.params['batch_size'] // self.params['batch_chunks']
 
 
         torch.backends.cudnn.benchmark = True
@@ -201,8 +200,8 @@ class VAEShell():
         # writer = SummaryWriter(tensorboard_dir)
 
         ### Initialize Annealer
-        kl_annealer = KLAnnealer(self.params['BETA_INIT'], self.params['BETA'], 
-                                    40, self.params['ANNEAL_START'])#stop increasing beta at 40 epochs
+        kl_annealer = KLAnnealer(self.params['beta_init'], self.params['beta'], 
+                                    40, self.params['anneal_start'])#stop increasing beta at 40 epochs
 
         #print("stop increasing beta at 10 epochs")
         ### Epoch loop
@@ -217,18 +216,17 @@ class VAEShell():
                 train_step += 1
                 avg_losses = []
                 avg_bce_losses = []
-                avg_bcemask_losses = []
                 avg_kld_losses = []
                 avg_beta_kld_losses = []
                 avg_MMD_losses=[]
                 avg_prop_mse_losses = []
                 avg_perf_recon_accs = []
                 start_run_time = perf_counter()
-                for i in range(self.params['BATCH_CHUNKS']):
+                for i in range(self.params['batch_chunks']):
                     input_len = self.src_len+1 #input length including padding and start token
                     batch_data = data[i*self.chunk_size:(i+1)*self.chunk_size,:]
                     mols_data = batch_data[:,:input_len] #changed by zoe
-                    if self.params['ADJ_MAT']:
+                    if self.params['adj_matrix']:
                         adjMat_data = batch_data[:, input_len:-1] #added by zoe
                         adjMat_data = torch.reshape(adjMat_data, (self.chunk_size, input_len, input_len))
                     else:
@@ -237,51 +235,39 @@ class VAEShell():
                     if self.use_gpu:
                         mols_data = mols_data.cuda()
                         props_data = props_data.cuda()
-                        if self.params['ADJ_MAT']:
+                        if self.params['adj_matrix']:
                             adjMat_data = adjMat_data.cuda()
 
                     src = Variable(mols_data).long()
                     tgt = Variable(mols_data[:,:-1]).long()
                     true_prop = Variable(props_data)
-                    src_mask = (src != self.pad_idx).unsqueeze(-2)
-                    tgt_mask = make_std_mask(tgt, self.pad_idx)
 
-                    if self.model_type == 'transformer':
-                        x_out, mu, logvar, pred_len, pred_prop = self.model(src, tgt, src_mask, tgt_mask)
-                        true_len = src_mask.sum(dim=-1)
-                        loss, bce, bce_mask, kld, prop_mse = trans_vae_loss(src, x_out, mu, logvar,
-                                                                            true_len, pred_len,
-                                                                            true_prop, pred_prop,
-                                                                            self.params['CHAR_WEIGHTS'],
-                                                                            beta)
-                        avg_bcemask_losses.append(bce_mask.item())
-                        acc = 0
+                    
+                    if self.params['adj_matrix']:
+                        x_out, mu, logvar, pred_prop = self.model(src, tgt, adjMat_data) #Zoe Added AdjMatrix ", adjMat_data"
+                        
                     else:
-                        if self.params['ADJ_MAT']:
-                            x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask, adjMat_data) #Zoe Added AdjMatrix ", adjMat_data"
-                            
-                        else:
-                            x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask) #Zoe Added AdjMatrix ", adjMat_data"
+                        x_out, mu, logvar, pred_prop = self.model(src, tgt) #Zoe Added AdjMatrix ", adjMat_data"
 
-                        if self.params['MMD_USE']:
-                            loss, bce,MMD_loss,prop_mse = self.loss_func(src, x_out, mu, logvar,
-                                                                    true_prop, pred_prop,
-                                                                    self.params['CHAR_WEIGHTS'],
-                                                                    beta,
-                                                                    MMD_use=True,
-                                                                    latent_size=self.params['LATENT_SIZE'],
-                                                                    device=self.device)
-                            kld=torch.tensor(0.)
-                            beta_kld=torch.tensor(0.)
-                        else:
-                            loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
-                                                                    true_prop, pred_prop,
-                                                                    self.params['CHAR_WEIGHTS'],
-                                                                    beta)
-                            MMD_loss=torch.tensor(0.)
+                    if self.params['mmd_use']:
+                        loss, bce,MMD_loss,prop_mse = self.loss_func(src, x_out, mu, logvar,
+                                                                true_prop, pred_prop,
+                                                                self.params['char_weights'],
+                                                                beta,
+                                                                MMD_use=True,
+                                                                latent_size=self.params['latent_size'],
+                                                                device=self.device)
+                        kld=torch.tensor(0.)
+                        beta_kld=torch.tensor(0.)
+                    else:
+                        loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
+                                                                true_prop, pred_prop,
+                                                                self.params['char_weights'],
+                                                                beta)
+                        MMD_loss=torch.tensor(0.)
 
-                        #acc = self.perfect_recon_acc(src, x_out, self.tgt_len, self.params["CHAR_DICT"], self.params['ORG_DICT'])
-                        acc=0
+                    #acc = self.perfect_recon_acc(src, x_out, self.tgt_len, self.params["CHAR_DICT"], self.params['ORG_DICT'])
+                    acc=0
 
                     avg_losses.append(loss.item())
                     avg_bce_losses.append(bce.item())
@@ -302,10 +288,6 @@ class VAEShell():
                 avg_bce = np.mean(avg_bce_losses)
                 avg_perf_recon_acc = np.mean(avg_perf_recon_accs)
                 avg_MMD=np.mean(avg_MMD_losses)
-                if len(avg_bcemask_losses) == 0:
-                    avg_bcemask = 0
-                else:
-                    avg_bcemask = np.mean(avg_bcemask_losses)
                 avg_kld = np.mean(avg_kld_losses)
                 avg_beta_kld = np.mean(avg_beta_kld_losses)
                 avg_prop_mse = np.mean(avg_prop_mse_losses)
@@ -314,11 +296,10 @@ class VAEShell():
 
                 if log:
                     log_file = open(log_fn, 'a')
-                    log_file.write('{},{},{},{},{},{},{},{},{},{},{},{}\n'.format(self.n_epochs,
+                    log_file.write('{},{},{},{},{},{},{},{},{},{},{}\n'.format(self.n_epochs,
                                                                          j, 'train',
                                                                          avg_loss,
                                                                          avg_bce,
-                                                                         avg_bcemask,
                                                                          avg_kld,
                                                                          avg_beta_kld,
                                                                          avg_MMD,
@@ -338,18 +319,17 @@ class VAEShell():
             for j, data in enumerate(val_iter):
                 avg_losses = []
                 avg_bce_losses = []
-                avg_bcemask_losses = []
                 avg_kld_losses = []
                 avg_beta_kld_losses = []
                 avg_MMD_losses=[]
                 avg_prop_mse_losses = []
                 avg_perf_recon_accs = []
                 start_run_time = perf_counter()
-                for i in range(self.params['BATCH_CHUNKS']):
+                for i in range(self.params['batch_chunks']):
                     input_len = self.src_len+1 #input length including padding and start token
                     batch_data = data[i*self.chunk_size:(i+1)*self.chunk_size,:]
                     mols_data = batch_data[:,:input_len] #changed by zoe
-                    if self.params['ADJ_MAT']:
+                    if self.params['adj_matrix']:
                         adjMat_data = batch_data[:, input_len:-1] #added by zoe
                         adjMat_data = torch.reshape(adjMat_data, (self.chunk_size, input_len, input_len))
                     else:
@@ -357,52 +337,39 @@ class VAEShell():
                     if self.use_gpu:
                         mols_data = mols_data.cuda()
                         props_data = props_data.cuda()
-                        if self.params['ADJ_MAT']:
+                        if self.params['adj_matrix']:
                             adjMat_data = adjMat_data.cuda()
 
                     src = Variable(mols_data).long()
                     tgt = Variable(mols_data[:,:-1]).long()
                     true_prop = Variable(props_data)
-                    src_mask = (src != self.pad_idx).unsqueeze(-2)
-                    tgt_mask = make_std_mask(tgt, self.pad_idx)
                     scores = Variable(data[:,-1])
 
-                    if self.model_type == 'transformer':
-                        x_out, mu, logvar, pred_len, pred_prop = self.model(src, tgt, src_mask, tgt_mask)
-                        true_len = src_mask.sum(dim=-1)
-                        loss, bce, bce_mask, kld, prop_mse = trans_vae_loss(src, x_out, mu, logvar,
-                                                                            true_len, pred_len,
-                                                                            true_prop, pred_prop,
-                                                                            self.params['CHAR_WEIGHTS'],
-                                                                            beta)
-                        avg_bcemask_losses.append(bce_mask.item())
-                        acc = 0
+                    if self.params['adj_matrix']:
+                        x_out, mu, logvar, pred_prop = self.model(src, tgt, adjMat_data) #Zoe Added AdjMatrix ", adjMat_data"
+                        
                     else:
-                        if self.params['ADJ_MAT']:
-                            x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask, adjMat_data) #Zoe Added AdjMatrix ", adjMat_data"
-                            
-                        else:
-                            x_out, mu, logvar, pred_prop = self.model(src, tgt, src_mask, tgt_mask) #Zoe Added AdjMatrix ", adjMat_data"
+                        x_out, mu, logvar, pred_prop = self.model(src, tgt) #Zoe
 
-                        if self.params['MMD_USE']:
-                            loss, bce,MMD_loss,prop_mse = self.loss_func(src, x_out, mu, logvar,
-                                                                    true_prop, pred_prop,
-                                                                    self.params['CHAR_WEIGHTS'],
-                                                                    beta,
-                                                                    MMD_use=True,
-                                                                    latent_size=self.params['LATENT_SIZE'],
-                                                                    device=self.device)
-                            kld=torch.tensor(0.)
-                            beta_kld=torch.tensor(0.)
-                        else:
-                            loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
-                                                                    true_prop, pred_prop,
-                                                                    self.params['CHAR_WEIGHTS'],
-                                                                    beta)
-                            MMD_loss=torch.tensor(0.)
+                    if self.params['mmd_use']:
+                        loss, bce,MMD_loss,prop_mse = self.loss_func(src, x_out, mu, logvar,
+                                                                true_prop, pred_prop,
+                                                                self.params['char_weights'],
+                                                                beta,
+                                                                MMD_use=True,
+                                                                latent_size=self.params['latent_size'],
+                                                                device=self.device)
+                        kld=torch.tensor(0.)
+                        beta_kld=torch.tensor(0.)
+                    else:
+                        loss, bce, kld, beta_kld, prop_mse = self.loss_func(src, x_out, mu, logvar,
+                                                                true_prop, pred_prop,
+                                                                self.params['char_weights'],
+                                                                beta)
+                        MMD_loss=torch.tensor(0.)
 
-                        #acc = self.perfect_recon_acc(src, x_out, self.tgt_len, self.params["CHAR_DICT"], self.params['ORG_DICT'])
-                        acc=0
+                    #acc = self.perfect_recon_acc(src, x_out, self.tgt_len, self.params["CHAR_DICT"], self.params['ORG_DICT'])
+                    acc=0
 
                     avg_losses.append(loss.item())
                     avg_bce_losses.append(bce.item())
@@ -416,10 +383,6 @@ class VAEShell():
                 avg_loss = np.mean(avg_losses)
                 avg_bce = np.mean(avg_bce_losses)
                 avg_MMD=np.mean(avg_MMD_losses)
-                if len(avg_bcemask_losses) == 0:
-                    avg_bcemask = 0
-                else:
-                    avg_bcemask = np.mean(avg_bcemask_losses)
                 avg_kld = np.mean(avg_kld_losses)
                 avg_beta_kld = np.mean(avg_beta_kld_losses)
                 avg_prop_mse = np.mean(avg_prop_mse_losses)
@@ -428,14 +391,13 @@ class VAEShell():
 
                 if log:
                     log_file = open(log_fn, 'a')
-                    log_file.write('{},{},{},{},{},{},{},{},{},{}\n'.format(self.n_epochs,
+                    log_file.write('{},{},{},{},{},{},{},{},{},{},{}\n'.format(self.n_epochs,
                                                                 j, 'test',
                                                                 avg_loss,
                                                                 avg_bce,
-                                                                avg_bcemask,
                                                                 avg_kld,
                                                                 avg_beta_kld,
-                                                                 avg_MMD,
+                                                                avg_MMD,
                                                                 avg_prop_mse,
                                                                 avg_perf_recon_acc,
                                                                 run_time))
@@ -443,7 +405,7 @@ class VAEShell():
 
             self.n_epochs += 1
             val_loss = np.mean(losses)
-            if self.params['MMD_USE']:
+            if self.params['mmd_use']:
                 print('Epoch - {} Train - {} Val - {}'.format(self.n_epochs, train_loss, val_loss))
             else:
                 print('Epoch - {} Train - {} Val - {} KLBeta - {}'.format(self.n_epochs, train_loss, val_loss, beta))
@@ -500,61 +462,40 @@ class VAEShell():
         return z
 
     
-    def greedy_decode(self, mem, src_mask=None, condition=[]):
+    def greedy_decode(self, mem, condition=[]):
         """
         Greedy decode from model memory
 
         Arguments:
             mem (torch.tensor, req): Memory tensor to send to decoder
-            src_mask (torch.tensor): Mask tensor to hide padding tokens (if
-                                     model_type == 'transformer')
         Returns:
             decoded (torch.tensor): Tensor of predicted token ids
         """
         torch.cuda.empty_cache()
 
-        start_symbol = self.params['CHAR_DICT']['<start>']
+        start_symbol = self.params['char_dict']['<start>']
         max_len = self.tgt_len
         decoded = torch.ones(mem.shape[0],1).fill_(start_symbol).long()
         for tok in condition:
-            condition_symbol = self.params['CHAR_DICT'][tok]
+            condition_symbol = self.params['char_dict'][tok]
             condition_vec = torch.ones(mem.shape[0],1).fill_(condition_symbol).long()
             decoded = torch.cat([decoded, condition_vec], dim=1)
         tgt = torch.ones(mem.shape[0],max_len+2).fill_(start_symbol).long() #add start token for teacher forcing
         #above +1  hanged to +2 by zoe 
         tgt[:,:len(condition)+1] = decoded
-        if src_mask is None and self.model_type == 'transformer':
-            mask_lens = self.model.encoder.predict_mask_length(mem)
-            src_mask = torch.zeros((mem.shape[0], 1, self.src_len+1))
-            for i in range(mask_lens.shape[0]):
-                mask_len = mask_lens[i].item()
-                src_mask[i,:,:mask_len] = torch.ones((1, 1, mask_len))
-        elif self.model_type != 'transformer':
-            src_mask = torch.ones((mem.shape[0], 1, self.src_len))
 
         if self.use_gpu:
-            src_mask = src_mask.cuda()
             decoded = decoded.cuda()
             tgt = tgt.cuda()
 
         self.model.eval()
         for i in range(len(condition), max_len+1): #+1 added by zoe
-            if self.model_type == 'transformer':
-                decode_mask = Variable(subsequent_mask(decoded.size(1)).long())
-                if self.use_gpu:
-                    decode_mask = decode_mask.cuda()
-                out = self.model.decode(mem, src_mask, Variable(decoded),
-                                        decode_mask)
-            else:
-                out, _ = self.model.decode(tgt[:, :-1], mem) #last token in tgt not needed for teacher forcing
+            out, _ = self.model.decode(tgt[:, :-1], mem) #last token in tgt not needed for teacher forcing
             out = self.model.generator(out) #shape is (100, 58, 25) ie no start token
             prob = F.softmax(out[:,i,:], dim=-1)
             _, next_word = torch.max(prob, dim=1)
             next_word += 1 #convert to alphabet with start token
             tgt[:,i+1] = next_word
-            if self.model_type == 'transformer':
-                next_word = next_word.unsqueeze(1)
-                decoded = torch.cat([decoded, next_word], dim=1)
         decoded = tgt[:,1:] #delete the start token
         return decoded #shape (100, 58) no start token, but uses 26-alphabet
 
@@ -601,15 +542,15 @@ class VAEShell():
                                    token ids
             mems (np.array): Array of model memory vectors
         """
-        data = vae_data_gen(mols, None, self.params['CHAR_DICT'], self.src_len, use_adj=self.params["ADJ_MAT"], adj_weight=self.params["ADJ_WEIGHT"])
+        data = vae_data_gen(mols, None, self.params['char_dict'], self.src_len, use_adj=self.params["adj_matrix"], adj_weight=self.params["adj_weight"])
         #data = dataloader.VAE_Dataset(data, None, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
 
         data_iter = torch.utils.data.DataLoader(data,
-                                                batch_size=self.params['BATCH_SIZE'],
+                                                batch_size=self.params['batch_size'],
                                                 shuffle=False,num_workers=0,
                                                 pin_memory=False, drop_last=True)
-        self.batch_size = self.params['BATCH_SIZE']
-        self.chunk_size = self.batch_size // self.params['BATCH_CHUNKS']
+        self.batch_size = self.params['batch_size']
+        self.chunk_size = self.batch_size // self.params['batch_chunks']
 
         input_len = self.src_len+1 #added by Zoe
 
@@ -617,15 +558,14 @@ class VAEShell():
         decoded_smiles = []
         mems = torch.empty((data.shape[0], self.params['d_latent'])).cpu()
         for j, data in enumerate(data_iter):
-            print("Batch " + str(j))
             if log:
                 log_file = open('calcs/{}_progress.txt'.format(self.name), 'a')
                 log_file.write('{}\n'.format(j))
                 log_file.close()
-            for i in range(self.params['BATCH_CHUNKS']):
+            for i in range(self.params['batch_chunks']):
                 batch_data = data[i*self.chunk_size:(i+1)*self.chunk_size,:]
                 mols_data = batch_data[:,:input_len] #changed by zoe
-                if self.params['ADJ_MAT']:
+                if self.params['adj_matrix']:
                     adjMat_data = batch_data[:, input_len:-1] #added by zoe
                     adjMat_data = torch.reshape(adjMat_data, (self.chunk_size, input_len, input_len))
                 else:
@@ -634,31 +574,27 @@ class VAEShell():
                 if self.use_gpu:
                     mols_data = mols_data.cuda()
                     props_data = props_data.cuda()
-                    if self.params['ADJ_MAT']:
+                    if self.params['adj_matrix']:
                         adjMat_data = adjMat_data.cuda()
 
 
                 src = Variable(mols_data).long()
-                src_mask = (src != self.pad_idx).unsqueeze(-2)
 
                 ### Run through encoder to get memory
-                if self.model_type == 'transformer':
-                    _, mem, _, _ = self.model.encode(src, src_mask)
-                else:
-                    _, mem, _ = self.model.encode(src, adjMatrix=adjMat_data)
+                _, mem, _ = self.model.encode(src, adjMatrix=adjMat_data)
                 start = j*self.batch_size+i*self.chunk_size
                 stop = j*self.batch_size+(i+1)*self.chunk_size
                 mems[start:stop, :] = mem.detach().cpu()
 
                 ### Decode logic
                 if method == 'greedy':
-                    decoded = self.greedy_decode(mem, src_mask=src_mask) #
+                    decoded = self.greedy_decode(mem) #
                     #outputs seqs of length 57
                 else:
                     decoded = None
 
                 if return_str:
-                    decoded = decode_mols(decoded, self.params['ORG_DICT'])
+                    decoded = decode_mols(decoded, self.params['org_dict'])
                     decoded_smiles += decoded
                 else:
                     decoded_smiles.append(decoded)
@@ -702,7 +638,7 @@ class VAEShell():
             decoded = None
 
         if return_str:
-            decoded = decode_mols(decoded, self.params['ORG_DICT'])
+            decoded = decode_mols(decoded, self.params['org_dict'])
         return decoded
 
     def calc_mems(self, data, log=True, save_dir='memory', save_fn='model_name', save=True):
@@ -721,14 +657,14 @@ class VAEShell():
             logvars(np.array): Log variance array (prior to reparameterization)
         """
 
-        data = self.data_gen(data, None, self.params['CHAR_DICT'], self.src_len, self.params['ADJ_MAT'], self.params['ADJ_WEIGHT'])
+        data = self.data_gen(data, None, self.params['char_dict'], self.src_len, self.params['adj_matrix'], self.params['adj_weight'])
         data_iter = torch.utils.data.DataLoader(data,
-                                                batch_size=self.params['BATCH_SIZE'],
+                                                batch_size=self.params['batch_size'],
                                                 shuffle=False, num_workers=0,
                                                 pin_memory=False, drop_last=True)
-        save_shape = len(data_iter)*self.params['BATCH_SIZE']
-        self.batch_size = self.params['BATCH_SIZE']
-        self.chunk_size = self.batch_size // self.params['BATCH_CHUNKS']
+        save_shape = len(data_iter)*self.params['batch_size']
+        self.batch_size = self.params['batch_size']
+        self.chunk_size = self.batch_size // self.params['batch_chunks']
         mems = torch.empty((save_shape, self.params['d_latent'])).cpu()
         mus = torch.empty((save_shape, self.params['d_latent'])).cpu()
         logvars = torch.empty((save_shape, self.params['d_latent'])).cpu()
@@ -739,11 +675,11 @@ class VAEShell():
                 log_file = open('memory/{}_progress.txt'.format(self.name), 'a')
                 log_file.write('{}\n'.format(j))
                 log_file.close()
-            for i in range(self.params['BATCH_CHUNKS']):
+            for i in range(self.params['batch_chunks']):
                 input_len = self.src_len+1 #input length including padding and start token
                 batch_data = data[i*self.chunk_size:(i+1)*self.chunk_size,:]
                 mols_data = batch_data[:,:input_len] #changed by zoe
-                if self.params['ADJ_MAT']:
+                if self.params['adj_matrix']:
                     adjMat_data = batch_data[:, input_len:-1] #added by zoe
                     adjMat_data = torch.reshape(adjMat_data, (self.chunk_size, input_len, input_len))
                 else:
@@ -752,17 +688,13 @@ class VAEShell():
                 if self.use_gpu:
                     mols_data = mols_data.cuda()
                     props_data = props_data.cuda()
-                    if self.params['ADJ_MAT']:
+                    if self.params['adj_matrix']:
                         adjMat_data = adjMat_data.cuda()
 
                 src = Variable(mols_data).long()
-                src_mask = (src != self.pad_idx).unsqueeze(-2)
 
                 ### Run through encoder to get memory
-                if self.model_type == 'transformer':
-                    mem, mu, logvar, _ = self.model.encode(src, src_mask,)
-                else:
-                    mem, mu, logvar = self.model.encode(src, adjMat_data)
+                mem, mu, logvar = self.model.encode(src, adjMat_data)
                 start = j*self.batch_size+i*self.chunk_size
                 stop = j*self.batch_size+(i+1)*self.chunk_size
                 mems[start:stop, :] = mem.detach().cpu()
@@ -782,130 +714,6 @@ class VAEShell():
 
 ####### Encoder, Decoder and Generator ############
 
-class TransVAE(VAEShell):
-    """
-    Transformer-based VAE class. Between the encoder and decoder is a stochastic
-    latent space. "Memory value" matrices are convolved to latent bottleneck and
-    deconvolved before being sent to source attention in decoder.
-    """
-    def __init__(self, params={}, name=None, N=3, d_model=128, d_ff=512,
-                 d_latent=128, h=4, dropout=0.1, bypass_bottleneck=False,
-                 property_predictor=False, d_pp=256, depth_pp=2, load_fn=None):
-        super().__init__(params, name)
-        """
-        Instatiating a TransVAE object builds the model architecture, data structs
-        to store the model parameters and training information and initiates model
-        weights. Most params have default options but vocabulary must be provided.
-
-        Arguments:
-            params (dict, required): Dictionary with model parameters. Keys must match
-                                     those written in this module
-            name (str): Name of model (all save and log files will be written with
-                        this name)
-            N (int): Number of repeat encoder and decoder layers
-            d_model (int): Dimensionality of model (embeddings and attention)
-            d_ff (int): Dimensionality of feed-forward layers
-            d_latent (int): Dimensionality of latent space
-            h (int): Number of heads per attention layer
-            dropout (float): Rate of dropout
-            bypass_bottleneck (bool): If false, model functions as standard autoencoder
-            property_predictor (bool): If true, model will predict property from latent memory
-            d_pp (int): Dimensionality of property predictor layers
-            depth_pp (int): Number of property predictor layers
-            load_fn (str): Path to checkpoint file
-        """
-
-        ### Store architecture params
-        self.model_type = 'transformer'
-        self.params['model_type'] = self.model_type
-        self.params['N'] = N
-        self.params['d_model'] = d_model
-        self.params['d_ff'] = d_ff
-        self.params['d_latent'] = d_latent
-        self.params['h'] = h
-        self.params['dropout'] = dropout
-        self.params['bypass_bottleneck'] = bypass_bottleneck
-        self.params['property_predictor'] = property_predictor
-        self.params['d_pp'] = d_pp
-        self.params['depth_pp'] = depth_pp
-        self.arch_params = ['N', 'd_model', 'd_ff', 'd_latent', 'h', 'dropout', 'bypass_bottleneck',
-                            'property_predictor', 'd_pp', 'depth_pp']
-
-        ### Build model architecture
-        if load_fn is None:
-            self.build_model()
-        else:
-            self.load(load_fn)
-
-    def build_model(self):
-        """
-        Build model architecture. This function is called during initialization as well as when
-        loading a saved model checkpoint
-        """
-        c = copy.deepcopy
-        attn = MultiHeadedAttention(self.params['h'], self.params['d_model'])
-        ff = PositionwiseFeedForward(self.params['d_model'], self.params['d_ff'], self.params['dropout'])
-        position = PositionalEncoding(self.params['d_model'], self.params['dropout'])
-        encoder = VAEEncoder(EncoderLayer(self.params['d_model'], self.src_len, c(attn), c(ff), self.params['dropout']),
-                                          self.params['N'], self.params['d_latent'], self.params['bypass_bottleneck'],
-                                          self.params['EPS_SCALE'])
-        decoder = VAEDecoder(EncoderLayer(self.params['d_model'], self.src_len, c(attn), c(ff), self.params['dropout']),
-                             DecoderLayer(self.params['d_model'], self.tgt_len, c(attn), c(attn), c(ff), self.params['dropout']),
-                                          self.params['N'], self.params['d_latent'], self.params['bypass_bottleneck'])
-        src_embed = nn.Sequential(Embeddings(self.params['d_model'], self.vocab_size), c(position))
-        tgt_embed = nn.Sequential(Embeddings(self.params['d_model'], self.vocab_size), c(position))
-        generator = Generator(self.params['d_model'], self.vocab_size)
-        if self.params['property_predictor']:
-            property_predictor = PropertyPredictor(self.params['d_pp'], self.params['depth_pp'], self.params['d_latent'])
-        else:
-            property_predictor = None
-        self.model = EncoderDecoder(encoder, decoder, src_embed, tgt_embed, generator, property_predictor)
-        for p in self.model.parameters():
-            if p.dim() > 1:
-                nn.init.xavier_uniform_(p)
-        self.use_gpu = torch.cuda.is_available()
-        if self.use_gpu:
-            self.model.cuda()
-            self.params['CHAR_WEIGHTS'] = self.params['CHAR_WEIGHTS'].cuda()
-
-        ### Initiate optimizer
-        self.optimizer = NoamOpt(self.params['d_model'], self.params['LR_SCALE'], self.params['WARMUP_STEPS'],
-                                 torch.optim.Adam(self.model.parameters(), lr=0,
-                                 betas=(0.9,0.98), eps=1e-9))
-
-class EncoderDecoder(nn.Module):
-    """
-    Base transformer Encoder-Decoder architecture
-    """
-    def __init__(self, encoder, decoder, src_embed, tgt_embed, generator, property_predictor):
-        super().__init__()
-        self.encoder = encoder
-        self.decoder = decoder
-        self.src_embed = src_embed
-        self.tgt_embed = tgt_embed
-        self.generator = generator
-        self.property_predictor = property_predictor
-
-    def forward(self, src, tgt, src_mask, tgt_mask, adjMatrix): #add adjMatrix input
-        "Take in and process masked src and tgt sequences"
-        mem, mu, logvar, pred_len = self.encode(src, src_mask)
-        x = self.decode(mem, src_mask, tgt, tgt_mask)
-        x = self.generator(x)
-        if self.property_predictor is not None:
-            prop = self.predict_property(mu)
-        else:
-            prop = None
-        return x, mu, logvar, pred_len, prop
-
-    def encode(self, src, src_mask):
-        return self.encoder(self.src_embed(src), src_mask)
-
-    def decode(self, mem, src_mask, tgt, tgt_mask):
-        return self.decoder(self.tgt_embed(tgt), mem, src_mask, tgt_mask)
-
-    def predict_property(self, mu):
-        return self.property_predictor(mu)
-
 class Generator(nn.Module):
     "Generates token predictions after final decoder layer"
     def __init__(self, d_model, vocab):
@@ -914,211 +722,6 @@ class Generator(nn.Module):
 
     def forward(self, x):
         return self.proj(x)
-
-class VAEEncoder(nn.Module):
-    "Base transformer encoder architecture"
-    def __init__(self, layer, N, d_latent, bypass_bottleneck, eps_scale):
-        super().__init__()
-        self.layers = clones(layer, N)
-        self.conv_bottleneck = ConvBottleneck(layer.size)
-        self.z_means, self.z_var = nn.Linear(320, d_latent), nn.Linear(320, d_latent) #320 used to be 576
-        self.norm = LayerNorm(layer.size)
-        self.predict_len1 = nn.Linear(d_latent, d_latent*2)
-        self.predict_len2 = nn.Linear(d_latent*2, d_latent)
-
-        self.bypass_bottleneck = bypass_bottleneck
-        self.eps_scale = eps_scale
-
-    def predict_mask_length(self, mem):
-        "Predicts mask length from latent memory so mask can be re-created during inference"
-        pred_len = self.predict_len1(mem)
-        pred_len = self.predict_len2(pred_len)
-        pred_len = F.softmax(pred_len, dim=-1)
-        pred_len = torch.topk(pred_len, 1)[1]
-        return pred_len
-
-    def reparameterize(self, mu, logvar, eps_scale=1):
-        "Stochastic reparameterization"
-        std = torch.exp(0.5*logvar)
-        eps = torch.randn_like(std) * eps_scale
-        return mu + eps*std
-
-    def forward(self, x, mask):
-        ### Attention and feedforward layers
-        for i, attn_layer in enumerate(self.layers):
-            x = attn_layer(x, mask)
-        ### Batch normalization
-        mem = self.norm(x)
-        ### Convolutional Bottleneck
-        if self.bypass_bottleneck:
-            mu, logvar = Variable(torch.tensor([0.0])), Variable(torch.tensor([0.0]))
-        else:
-            mem = mem.permute(0, 2, 1)
-            mem = self.conv_bottleneck(mem)
-            mem = mem.contiguous().view(mem.size(0), -1)
-            mu, logvar = self.z_means(mem), self.z_var(mem)
-            mem = self.reparameterize(mu, logvar, self.eps_scale)
-            pred_len = self.predict_len1(mu)
-            pred_len = self.predict_len2(pred_len)
-        return mem, mu, logvar, pred_len
-
-    def forward_w_attn(self, x, mask):
-        "Forward pass that saves attention weights"
-        attn_wts = []
-        for i, attn_layer in enumerate(self.layers):
-            x, wts = attn_layer(x, mask, return_attn=True)
-            attn_wts.append(wts.detach().cpu())
-        mem = self.norm(x)
-        if self.bypass_bottleneck:
-            mu, logvar = Variable(torch.tensor([0.0])), Variable(torch.tensor([0.0]))
-        else:
-            mem = mem.permute(0, 2, 1)
-            mem = self.conv_bottleneck(mem)
-            mem = mem.contiguous().view(mem.size(0), -1)
-            mu, logvar = self.z_means(mem), self.z_var(mem)
-            mem = self.reparameterize(mu, logvar, self.eps_scale)
-            pred_len = self.predict_len1(mu)
-            pred_len = self.predict_len2(pred_len)
-        return mem, mu, logvar, pred_len, attn_wts
-
-class EncoderLayer(nn.Module):
-    "Self-attention/feedforward implementation"
-    def __init__(self, size, src_len, self_attn, feed_forward, dropout):
-        super().__init__()
-        self.size = size
-        self.src_len = src_len
-        self.self_attn = self_attn
-        self.feed_forward = feed_forward
-        self.sublayer = clones(SublayerConnection(self.size, dropout), 2)
-
-    def forward(self, x, mask, return_attn=False):
-        if return_attn:
-            attn = self.self_attn(x, x, x, mask, return_attn=True)
-            x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x, mask))
-            return self.sublayer[1](x, self.feed_forward), attn
-        else:
-            x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x, mask))
-            return self.sublayer[1](x, self.feed_forward)
-
-class VAEDecoder(nn.Module):
-    "Base transformer decoder architecture"
-    def __init__(self, encoder_layers, decoder_layers, N, d_latent, bypass_bottleneck):
-        super().__init__()
-        self.final_encodes = clones(encoder_layers, 1)
-        self.layers = clones(decoder_layers, N)
-        self.norm = LayerNorm(decoder_layers.size)
-        self.bypass_bottleneck = bypass_bottleneck
-        self.size = decoder_layers.size
-        self.tgt_len = decoder_layers.tgt_len
-
-        # Reshaping memory with deconvolution
-        self.linear = nn.Linear(d_latent, 320) #change 576 to 320
-        self.deconv_bottleneck = DeconvBottleneck(decoder_layers.size)
-
-    def forward(self, x, mem, src_mask, tgt_mask):
-        ### Deconvolutional bottleneck (up-sampling)
-        if not self.bypass_bottleneck:
-            mem = F.relu(self.linear(mem))
-            mem = mem.view(-1, 64, 5) #changed 9 to 5
-            mem = self.deconv_bottleneck(mem)
-            mem = mem.permute(0, 2, 1)
-        ### Final self-attention layer
-        for final_encode in self.final_encodes:
-            mem = final_encode(mem, src_mask)
-        # Batch normalization
-        mem = self.norm(mem)
-        ### Source-attention layers
-        for i, attn_layer in enumerate(self.layers):
-            x = attn_layer(x, mem, mem, src_mask, tgt_mask)
-        return self.norm(x)
-
-    def forward_w_attn(self, x, mem, src_mask, tgt_mask):
-        "Forward pass that saves attention weights"
-        if not self.bypass_bottleneck:
-            mem = F.relu(self.linear(mem))
-            mem = mem.view(-1, 64, 5) #changed 9 to 5
-            mem = self.deconv_bottleneck(mem)
-            mem = mem.permute(0, 2, 1)
-        for final_encode in self.final_encodes:
-            mem, deconv_wts  = final_encode(mem, src_mask, return_attn=True)
-        mem = self.norm(mem)
-        src_attn_wts = []
-        for i, attn_layer in enumerate(self.layers):
-            x, wts = attn_layer(x, mem, mem, src_mask, tgt_mask, return_attn=True)
-            src_attn_wts.append(wts.detach().cpu())
-        return self.norm(x), [deconv_wts.detach().cpu()], src_attn_wts
-
-class DecoderLayer(nn.Module):
-    "Self-attention/source-attention/feedforward implementation"
-    def __init__(self, size, tgt_len, self_attn, src_attn, feed_forward, dropout):
-        super().__init__()
-        self.size = size
-        self.tgt_len = tgt_len
-        self.self_attn = self_attn
-        self.src_attn = src_attn
-        self.feed_forward = feed_forward
-        self.sublayer = clones(SublayerConnection(self.size, dropout), 3)
-
-    def forward(self, x, memory_key, memory_val, src_mask, tgt_mask, return_attn=False):
-        m_key = memory_key
-        m_val = memory_val
-        if return_attn:
-            x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x, tgt_mask))
-            src_attn = self.src_attn(x, m_key, m_val, src_mask, return_attn=True)
-            x = self.sublayer[1](x, lambda x: self.src_attn(x, m_key, m_val, src_mask))
-            return self.sublayer[2](x, self.feed_forward), src_attn
-        else:
-            x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x, tgt_mask))
-            x = self.sublayer[1](x, lambda x: self.src_attn(x, m_key, m_val, src_mask))
-            return self.sublayer[2](x, self.feed_forward)
-
-############## Attention and FeedForward ################
-
-class MultiHeadedAttention(nn.Module):
-    "Multihead attention implementation (based on Vaswani et al.)"
-    def __init__(self, h, d_model, dropout=0.1):
-        "Take in model size and number of heads"
-        super().__init__()
-        assert d_model % h == 0
-        #We assume d_v always equals d_k
-        self.d_k = d_model // h
-        self.h = h
-        self.linears = clones(nn.Linear(d_model, d_model), 4)
-        self.attn = None
-        self.dropout = nn.Dropout(p=dropout)
-
-    def forward(self, query, key, value, mask=None, return_attn=False):
-        "Implements Figure 2"
-        if mask is not None:
-            # Same mask applied to all h heads
-            mask = mask.unsqueeze(1)
-        nbatches = query.size(0)
-
-        # 1) Do all the linear projections in batch from d_model => h x d_k
-        query, key, value = [l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
-                            for l, x in zip(self.linears, (query, key, value))]
-
-        # 2) Apply attention on all the projected vectors in batch
-        x, self.attn = attention(query, key, value, mask=mask,
-                                 dropout=self.dropout)
-
-        # 3) "Concat" using a view and apply a final linear
-        x = x.transpose(1, 2).contiguous().view(nbatches, -1, self.h * self.d_k)
-        if return_attn:
-            return self.attn
-        else:
-            return self.linears[-1](x)
-
-class PositionwiseFeedForward(nn.Module):
-    "Feedforward implementation"
-    def __init__(self, d_model, d_ff, dropout=0.1):
-        super().__init__()
-        self.w_1 = nn.Linear(d_model, d_ff)
-        self.w_2 = nn.Linear(d_ff, d_model)
-        self.dropout = nn.Dropout(dropout)
-
-    def forward(self, x):
-        return self.w_2(self.dropout(F.relu(self.w_1(x))))
 
 
 ############## BOTTLENECKS #################
@@ -1213,36 +816,8 @@ class Embeddings(nn.Module):
     def forward(self, x):
         return self.lut(x) * math.sqrt(self.d_model)
 
-class PositionalEncoding(nn.Module):
-    "Static sinusoidal positional encoding layer"
-    def __init__(self, d_model, dropout, max_len=5000):
-        super().__init__()
-        self.dropout = nn.Dropout(p=dropout)
-
-        # Compute the positional encodings once in log space
-        pe = torch.zeros(max_len, d_model)
-        position = torch.arange(0, max_len).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2) * -(math.log(10000.0) / d_model))
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        pe = pe.unsqueeze(0)
-        self.register_buffer('pe', pe)
-
-    def forward(self, x):
-        x = x + Variable(self.pe[:, :x.size(1)],
-                         requires_grad=False)
-        return self.dropout(x)
 
 ############## Utility Layers ####################
-
-class TorchLayerNorm(nn.Module):
-    "Construct a layernorm module (pytorch)"
-    def __init__(self, features, eps=1e-6):
-        super().__init__()
-        self.bn = nn.BatchNorm1d(features)
-
-    def forward(self, x):
-        return self.bn(x)
 
 class LayerNorm(nn.Module):
     "Construct a layernorm module (manual)"
@@ -1256,17 +831,3 @@ class LayerNorm(nn.Module):
         mean = x.mean(-1, keepdim=True)
         std = x.std(-1, keepdim=True)
         return self.a_2 * (x - mean) / (std + self.eps) + self.b_2
-
-class SublayerConnection(nn.Module):
-    """
-    A residual connection followed by a layer norm.
-    Note for code simplicity the norm is first as opposed to last.
-    """
-    def __init__(self, size, dropout):
-        super().__init__()
-        self.norm = LayerNorm(size)
-        self.dropout = nn.Dropout(dropout)
-
-    def forward(self, x, sublayer):
-        "Apply residual connection to any sublayer with the same size"
-        return x + self.dropout(sublayer(self.norm(x)))
