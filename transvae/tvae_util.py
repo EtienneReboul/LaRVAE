@@ -141,7 +141,6 @@ def get_char_weights(train_smiles, params, freq_penalty=0.5):
             char_dist[char] += 1
         for j in range(i, params['MAX_LENGTH']):
             char_dist['_'] += 1
-    print(char_dist)
     for i, v in enumerate(char_dist.values()):
         char_counts[i] = v
     top = np.sum(np.log(char_counts))
@@ -155,7 +154,25 @@ def get_char_weights(train_smiles, params, freq_penalty=0.5):
     char_weights = scaler.fit_transform(char_weights.reshape(-1, 1))
     return char_weights[:,0]
 
-#def get_char_weights_new(train_selfies, params, freq_penalty=0.5):
+def get_char_weights_new(train_selfies, params):
+    max_len = params['MAX_LENGTH']
+    char_counts = {}
+    char_dict = params['CHAR_DICT']
+    for tok in char_dict.keys():
+        char_counts[tok] = 0
+    for selfie in train_selfies:
+        for tok in selfie:
+            char_counts[tok] = char_counts[tok]+1
+        char_counts["_"] = char_counts["_"] + (max_len-len(selfie))
+    
+    weight_dict = {}
+    for tok, count in char_counts.items():
+        weight_dict[tok] = max_len * len(train_selfies) / count
+
+    weights = np.log(list(weight_dict.values()))
+
+    weights = weights/ sum(weights) #normalize to sum to 1
+    return weights
 
 
 ####### POSTPROCESSING HELPERS ##########
